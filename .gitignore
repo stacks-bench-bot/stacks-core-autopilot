@@ -1,0 +1,19 @@
+# Machine-specific operator config. Real values live at
+# ~/.config/sbagent/config.toml; an in-tree copy is supported
+# for backward compat but should NOT be committed.
+/config.toml
+
+# stacks-core build artifacts inside the submodule.
+repos/stacks-core/target/
+
+# Local-only mutable session state (worktrees from older
+# sbagent versions). Agent scratch state lives under
+# `agent_workspace_root` in /private/tmp/... by default,
+# but old layouts kept it here.
+/sessions/*/worktrees/
+
+# Editor / OS noise.
+.DS_Store
+.idea/
+.vscode/
+*.swp
