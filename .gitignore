@@ -6,11 +6,24 @@
 # stacks-core build artifacts inside the submodule.
 repos/stacks-core/target/
 
-# Local-only mutable session state (worktrees from older
-# sbagent versions). Agent scratch state lives under
-# `agent_workspace_root` in /private/tmp/... by default,
-# but old layouts kept it here.
-/sessions/*/worktrees/
+# Per-session artifacts (baseline/triage/analysis/merge/optimize/
+# finalize results, bench output, traces). Each session can be GBs;
+# tracking them would bloat the repo enormously. The summary.json /
+# summary.md from finalize are the small/valuable bits — surface them
+# manually when worth preserving.
+/sessions/
+
+# stacks-bench appdata (chainstate, sqlite db, profiler data). Built
+# locally by `sbagent baseline run`; multi-GB binary.
+/data/
+
+# Operator memory dir. Contains the analyzed-rejections ledger (worth
+# tracking long-term — defer until we settle on a commit cadence) and
+# the runtime lockfile (never worth tracking). For now leave the dir
+# fully untracked; explicitly ignore the lockfile so a future
+# decision to track memory/ doesn't accidentally commit it.
+/memory/
+/memory/.locks/
 
 # Editor / OS noise.
 .DS_Store
