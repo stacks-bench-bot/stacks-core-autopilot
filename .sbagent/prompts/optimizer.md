@@ -79,20 +79,20 @@ cargo clippy-stackslib  # normal_pr only
 # normal_pr — full suite must pass:
 cargo nextest run --no-fail-fast --retries 2 \
   --no-output-indent --failure-output final --success-output never \
-  --status-level slow --final-status-level retry \
+  --status-level slow --final-status-level flaky \
   --hide-progress-bar --no-input-handler \
   > "{{ output_dir }}/nextest.log" 2>&1
 
 # consensus_poc_pr — scoped only:
 cargo nextest run --no-fail-fast --retries 2 \
   --no-output-indent --failure-output final --success-output never \
-  --status-level slow --final-status-level retry \
+  --status-level slow --final-status-level flaky \
   --hide-progress-bar --no-input-handler \
   -E "{{ poc_test_scope_expr }}" \
   > "{{ output_dir }}/nextest.log" 2>&1
 ```
 
-Flag notes: `--no-output-indent` keeps log lines flush so `grep`/`awk` work cleanly; `--failure-output final` defers failure output to the run summary (cleaner log; `--status-level slow` keeps progress signal so polling tails can tell the suite isn't stuck); `--final-status-level retry` includes retried tests in the summary so flake patterns surface.
+Flag notes: `--no-output-indent` keeps log lines flush for `grep`/`awk`; `--failure-output final` keeps failure text in the summary; `--status-level slow` gives tail-visible progress; `--final-status-level flaky` surfaces retried tests.
 
 If nextest fails after retries: emit `outcome: "aborted"` with `failed_gate: "nextest"`, populate `failing_tests` with the fully-qualified ids of the failures, and `reason` pointing at `nextest.log`. Exit.
 
