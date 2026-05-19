@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "family_id": "clarity-commit-trie-blob-append",
+  "status": "accepted",
+  "selection_lens": "commit_time",
+  "lens_disposition": {
+    "lens": "commit_time",
+    "status": "not_actionable",
+    "reason": "The commit-time signal is real, but the dominant code in `TrieFile::append_trie_blob` is the required external-blob durability barrier: after determining the append offset it writes the serialized trie blob, flushes the file handle, and calls `fd.sync_data()` before `trie_sql::write_external_trie_blob` records the offset/length in SQLite and before the enclosing MARF transaction commits. Removing or deferring that sync would allow a crash to leave durable SQLite metadata pointing at an un-durable or missing `.blobs` range. A meaningful fix would require a MARF external-blob storage/durability redesign or wider transaction protocol, not a localized code optimization to the current append path."
+  },
+  "targets": [],
+  "global_materiality_note": "`append_trie_blob` is broad and material in this run: it appears twice in every one of 9000 blocks, totaling 66.979s exclusive wall time, with p50 7.055 ms/block and top3 share 0.1%. The same durability barrier likely affects all workloads using external MARF trie blobs, but it is intentionally preserving crash consistency rather than performing avoidable CPU work."
+}

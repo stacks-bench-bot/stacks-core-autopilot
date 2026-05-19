@@ -1,0 +1,109 @@
+{
+  "success": true,
+  "duration_secs": 295.920097208,
+  "data": {
+    "blocks": 100,
+    "duration_secs": 129.083577333,
+    "interrupted": false,
+    "measured_blocks": 50,
+    "run_id": 5,
+    "summary": {
+      "clarity_runtime": 1720841510,
+      "commit_duration_us": 1363093,
+      "execution_duration_us": 58034826,
+      "read_length": 562480490,
+      "setup_duration_us": 211492,
+      "total_duration_us": 59609412,
+      "transactions": 150,
+      "write_length": 2240510
+    },
+    "targets": [
+      {
+        "identifier": "e7fdcb9828747cbacbeee6ac10e2c71c5e9dae7eaf02ae625b180a478b3a6c9a",
+        "kind": "block",
+        "measured_count": 10,
+        "parent_block": 5003366,
+        "summary": {
+          "clarity_runtime": 359158650,
+          "commit_duration_us": 303683,
+          "execution_duration_us": 13524758,
+          "read_length": 131446670,
+          "setup_duration_us": 45552,
+          "total_duration_us": 13873993,
+          "transactions": 20,
+          "write_length": 552630
+        },
+        "warmup_count": 10
+      },
+      {
+        "identifier": "27e4ba37207ad6c82bbe020a290faeeec722d604390a3caed70d7ede247df6ab",
+        "kind": "block",
+        "measured_count": 10,
+        "parent_block": 5003393,
+        "summary": {
+          "clarity_runtime": 595168780,
+          "commit_duration_us": 309987,
+          "execution_duration_us": 15104619,
+          "read_length": 143717490,
+          "setup_duration_us": 44900,
+          "total_duration_us": 15459506,
+          "transactions": 50,
+          "write_length": 568760
+        },
+        "warmup_count": 10
+      },
+      {
+        "identifier": "46bfe55653a32c2d3fa4a462a228906e6950ea61710ed0bf33f0d0e89247a40a",
+        "kind": "block",
+        "measured_count": 10,
+        "parent_block": 5003180,
+        "summary": {
+          "clarity_runtime": 383595960,
+          "commit_duration_us": 311974,
+          "execution_duration_us": 14726180,
+          "read_length": 143827010,
+          "setup_duration_us": 41378,
+          "total_duration_us": 15079534,
+          "transactions": 40,
+          "write_length": 559560
+        },
+        "warmup_count": 10
+      },
+      {
+        "identifier": "efec3303b5b17220e678cf746dead87929117a6a909103cb60f3e3dd1ca4c216",
+        "kind": "block",
+        "measured_count": 10,
+        "parent_block": 5003292,
+        "summary": {
+          "clarity_runtime": 382918120,
+          "commit_duration_us": 313944,
+          "execution_duration_us": 14670809,
+          "read_length": 143489320,
+          "setup_duration_us": 43475,
+          "total_duration_us": 15028229,
+          "transactions": 30,
+          "write_length": 559560
+        },
+        "warmup_count": 10
+      },
+      {
+        "identifier": "48ff9e3684521b9369f031de3c753f4b908e006f1fe0e1f7f23a19c82bdf3174",
+        "kind": "block",
+        "measured_count": 10,
+        "parent_block": 5003450,
+        "summary": {
+          "clarity_runtime": 0,
+          "commit_duration_us": 123504,
+          "execution_duration_us": 8458,
+          "read_length": 0,
+          "setup_duration_us": 36185,
+          "total_duration_us": 168148,
+          "transactions": 10,
+          "write_length": 0
+        },
+        "warmup_count": 10
+      }
+    ],
+    "warmup_blocks": 50
+  }
+}

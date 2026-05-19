@@ -1,0 +1,184 @@
+{
+  "schema_version": 2,
+  "session_id": "20260517-111040-proposal-canonical",
+  "baseline_run_id": 1,
+  "baseline_rerun_id": 1,
+  "noise_floor_pct": 1.0,
+  "candidates": [
+    {
+      "id": "dual-stacking-snapshot-balance-folds",
+      "kind": "tx_family",
+      "selection_lens": "tx_latency",
+      "representative_ids": {
+        "stacks_tx_hashes": [
+          "0xdc657eda50e87123e4c2c10f8b3c42d6cfaac0d6ad2886aede8ec5f834283a56",
+          "0xebaa3d7288f90b335bf9e42f5ecb46b1b769f22771b151a1c492a191a97e30b7",
+          "0xc79d1f26e6974ee250410d3acfdb815716b42c9c6342c11109e25b32ea465671",
+          "0x05bb7eea2f1ba90be59c5b5b1005ead7d554dd3707e326c0fe635fedb4dc20b5",
+          "0x494317bcaf4d3bdcb223ba24d403858fdf8640c4d32964a22a972ca9fb41388e"
+        ]
+      },
+      "rationale": "Snapshot-balance contract calls repeat large fold/at-block/read-only balance subtrees across 79 txs, with top duration 3.71x median and multiple 1s-4s representatives.",
+      "suspected_spans": [
+        "fold",
+        "begin-read-only-tx",
+        "at-block",
+        "contract-call?",
+        "lookup_variable",
+        "compute-and-update-balances-one-user",
+        "get-user-total-sBTC-balance"
+      ],
+      "global_materiality": {
+        "pct_blocks": 26.3,
+        "self_wall_ms": 8772.68,
+        "notes": "Workload-conditional; broad span pcts reflect generic VM helpers, while representatives show the repeated nested balance-read shape."
+      },
+      "bucket": "block_processing"
+    },
+    {
+      "id": "gl-api-oracle-price-runtime",
+      "kind": "tx_family",
+      "selection_lens": "tenure_throughput",
+      "representative_ids": {
+        "stacks_tx_hashes": [
+          "0xbade8c4792b3d2ad2716b38b91f984f69c267fb4b924bcdb4a746710403fd7b4",
+          "0xcf790fc50607d6f8054ed80e33493f14c2d133d397185a40b6af6f96646b11f3",
+          "0x192d2260432993e9eedec61edbbc01c8ad61b39e65d47504f23c1e21343d3a59",
+          "0xdfe19dd6608633cf439017e20d02e8d018c7f83a19d6f41faea115b21a546640",
+          "0x060a13a470dec03d5aa0063b5d9d7b2ff734c8c8f4bef17d17dec85f5d98ccd9"
+        ]
+      },
+      "rationale": "gl-api open/close calls consume 75.6% of run Clarity runtime, with 609 repeated oracle parse/verification calls per representative and no single-rep dominance.",
+      "suspected_spans": [
+        "decode-pnau-price-update",
+        "parse-price-info-and-proof",
+        "parse-proof",
+        "check-merkle-proof",
+        "hash-path",
+        "hash-nodes"
+      ],
+      "global_materiality": {
+        "pct_blocks": 0.9,
+        "self_wall_ms": 121.65,
+        "notes": "Narrow but throughput-relevant; wall self-time understates deterministic Clarity runtime budget, and run-wide cost evidence may cross epoch cost regimes."
+      },
+      "bucket": "block_processing"
+    },
+    {
+      "id": "blocksurvey-proof-write-fanout",
+      "kind": "contract_family",
+      "selection_lens": "tenure_throughput",
+      "representative_ids": {
+        "contract_function": {
+          "issuer": "SP21EK0KSQG7HEHBGCVRJGPGFMV8SCA2B85X01DK2",
+          "contract": "blocksurvey-proof-of-submission",
+          "function": "proof-of-submission"
+        },
+        "stacks_tx_hashes": [
+          "0xfc9e08d8f83e79446ffd9a631be301cbd30cd76ccd145cde3e2ac2118506e7c6",
+          "0xb67e8548dbf6ea59980a7ef9d5e279435893889630a23a988d8bfa447691ce28",
+          "0x4c673c509161a8f2c4a95a828ee305f7526e2458ad8400ab14c734933b6bc902",
+          "0x9675cca187a4ec53e192bde1a7898b1f55ff6b676019536bb88321279178303e",
+          "0x1c7f65f899e58802b4ba22703f8860d11f21abccdd4c0d30c66482cdaaf47d25"
+        ]
+      },
+      "rationale": "proof-of-submission repeats 1453 nearly identical calls, contributing 15.83% of run write_count and 14.9% of write_length with max duration only 2.35x median.",
+      "suspected_spans": [
+        "is-response-already-submitted",
+        "get-response-by-id",
+        "is-survey-blocked",
+        "map-set",
+        "var-set"
+      ],
+      "global_materiality": {
+        "pct_blocks": 22.2,
+        "self_wall_ms": 115.23,
+        "notes": "Workload-conditional throughput candidate; write-axis cost is the primary signal and may amortize into commit work."
+      },
+      "bucket": "block_processing"
+    },
+    {
+      "id": "clarity-commit-trie-blob-append",
+      "kind": "block_family",
+      "selection_lens": "commit_time",
+      "representative_ids": {
+        "stacks_block_hashes": [
+          "0xe502faf8fc5a1323bc7bd25aa5089b4ebf265b830b037a783e2f4db4c1aebd58",
+          "0x606ee963267ae35ee9179291954711a4895c2e2cdc39f98d1a569c4bee66005c",
+          "0x8ebb5953af8825f4d143bd11b7e52dd110ee9b34e55835a4f9aa9c47cd805dd1",
+          "0x675f575b1e4d6ad925d159cbca8f749f1f432378e6a4527d2d0bc4412637e47c",
+          "0x2196eaf46b5be22362505947a8c9de5664f525d31907195a95d8dc3249273563"
+        ]
+      },
+      "rationale": "Clarity State Commit reaches append_trie_blob twice in every block, accounting for 66.98s self wall with uniform per-block distribution and top3 share 0.1%.",
+      "suspected_spans": [
+        "append_trie_blob",
+        "inner_write_external_trie_blob",
+        "store_trie_blob",
+        "flush_to",
+        "commit_to"
+      ],
+      "global_materiality": {
+        "pct_blocks": 100.0,
+        "self_wall_ms": 76642.38,
+        "notes": "Standard-priority commit bucket signal; broad across all 9000 blocks and close to empty-block commit overhead."
+      },
+      "bucket": "block_commit"
+    },
+    {
+      "id": "finalize-trie-node-hashing",
+      "kind": "block_family",
+      "selection_lens": "commit_time",
+      "representative_ids": {
+        "stacks_block_hashes": [
+          "0xc613f8cb0006d1963f1bd891c7992da0d5db44091ab48e225e92ebbae09df024",
+          "0xa636ba8ad97f366ff6bdb4a50f25fd3c116e5aafd758336c4f21b4edcb257ef6",
+          "0x1d89e0480357303e5f6ac2e90ca9973e2bef038438e7594fabf90873b51df4af",
+          "0x41a2093cc795e49934ff25268f62e8c7a7cc13e904a4d45030e3a8ac72bfb729",
+          "0xe93cf098a806c42ec1631d138c54e5f234513e9926a48270f04cfb307c507f8f"
+        ]
+      },
+      "rationale": "Finalize merkle+seal repeatedly descends calculate_node_hashes, with 677k calls, 20.65s self wall across all blocks, and top3 share 1.2%.",
+      "suspected_spans": [
+        "calculate_node_hashes",
+        "inner_get_trie_ancestor_hashes_bytes",
+        "get_node_hash_bytes"
+      ],
+      "global_materiality": {
+        "pct_blocks": 100.0,
+        "self_wall_ms": 24268.96,
+        "notes": "Standard-priority commit bucket signal; trace evidence places it under Segment: Finalize (merkle+seal)."
+      },
+      "bucket": "block_commit"
+    }
+  ],
+  "rejected_families": [
+    {
+      "family_id": "contract-metadata-fetch-wrapper",
+      "lens": "tx_latency",
+      "reason": "suspected spans exact-match non-targets: fetch_metadata"
+    },
+    {
+      "family_id": "clarity-value-serialization",
+      "lens": "tx_latency",
+      "reason": "investigated; no repeated workload pattern across representatives — diffuse across dual-stacking, uvas, and zest calls"
+    },
+    {
+      "family_id": "sparse-crypto-builtin-checks",
+      "lens": "tenure_throughput",
+      "reason": "investigated; no repeated workload pattern across representatives — sparse secp/hash builtins across unrelated contracts"
+    },
+    {
+      "family_id": "allocation-clone-hotspots",
+      "lens": "tx_latency",
+      "reason": "investigated; no repeated workload pattern across representatives — no indexed allocation or clone span family in profiler data"
+    }
+  ],
+  "lens_coverage": {
+    "tx_latency": 1,
+    "tenure_throughput": 2,
+    "commit_time": 2,
+    "weights_applied": "0.4,0.4,0.2",
+    "redistribution_notes": "Commit-time contributed two candidates because finalize hashing and clarity-state blob append are distinct commit anchors with broad recurrence."
+  }
+}

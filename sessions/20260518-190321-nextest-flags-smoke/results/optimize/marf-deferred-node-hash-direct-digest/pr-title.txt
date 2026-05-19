@@ -1,0 +1,1 @@
+perf: bypass Write adapter in deferred MARF node hashing

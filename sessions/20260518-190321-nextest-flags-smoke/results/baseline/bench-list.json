@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "duration_secs": 0.004575459,
+  "data": [
+    {
+      "args": {
+        "block_count": 10000,
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "baseline-20260514-160342",
+        "network": "Mainnet",
+        "no_profiler_kv": false,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 5000000
+        },
+        "warmup": 1000
+      },
+      "duration_secs": 1922.705,
+      "end_time": "2026-05-14T15:19:26",
+      "git_hash": "3fb8c2f1c1a8dcf3fd6ef6244becc7e317273490",
+      "id": 2,
+      "name": "baseline-20260514-160342",
+      "start_time": "2026-05-14T14:47:23",
+      "summary": {
+        "avg_block_duration_us": 56780,
+        "blocks": 9000,
+        "total_duration_us": 511024269
+      }
+    },
+    {
+      "args": {
+        "block_count": 10000,
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "baseline-20260514-160342",
+        "network": "Mainnet",
+        "no_profiler_kv": false,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 5000000
+        },
+        "warmup": 1000
+      },
+      "duration_secs": 2009.343,
+      "end_time": "2026-05-14T14:46:49",
+      "git_hash": "3fb8c2f1c1a8dcf3fd6ef6244becc7e317273490",
+      "id": 1,
+      "name": "baseline-20260514-160342",
+      "start_time": "2026-05-14T14:13:19",
+      "summary": {
+        "avg_block_duration_us": 63119,
+        "blocks": 9000,
+        "total_duration_us": 568072816
+      }
+    }
+  ]
+}

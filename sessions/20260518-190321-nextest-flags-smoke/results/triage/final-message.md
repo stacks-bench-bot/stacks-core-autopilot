@@ -1,0 +1,3 @@
+Wrote and validated [candidates.json](/Users/cylwit/Code/github.com/stacks-bench-bot/stacks-core-autopilot/sessions/20260517-111040-proposal-canonical/results/triage/candidates.json).
+
+Validation passed with `jq` and the supplied JSON schema. I also wrote drilldown CSVs under `triage/drilldowns/` only. The `sbagent rejections probe` command was blocked by sandbox permissions on the memory lock dir; the memory directory itself was empty on read-only inspection.

@@ -1,0 +1,6 @@
+tx_type,tx_count,total_duration_ms,avg_duration_ms
+"Contract Call",2935,189052.58,64.413
+"Token Transfer",8847,19652.25,2.221
+"Contract Deploy (Versioned)",13,310.03,23.848
+"Tenure Change",135,211.31,1.565
+"Coinbase (Nakamoto)",65,69.63,1.071

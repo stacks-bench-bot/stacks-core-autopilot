@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "family_id": "gl-api-oracle-price-runtime",
+  "status": "accepted",
+  "selection_lens": "tenure_throughput",
+  "lens_disposition": {
+    "lens": "tenure_throughput",
+    "status": "not_actionable",
+    "reason": "The promoted runtime-axis signal is real, and runtime is the nearest Clarity budget axis for these blocks, though the sampled blocks are not cap-saturating: the largest gl-api block uses about 1.54B runtime of a 5B Epoch33 budget while read/write axes are much farther from their caps. The code-level cause is Epoch33 Clarity value lookup/clone charging: tuple_get evaluates the tuple expression then calls ValueRef::clone_with_cost before extracting a field, and clone_with_cost charges LookupVariableSize for large fold accumulator values. All 48 gl-api open/close calls in the run are at burn heights 925436-925508 in Epoch33, while the repo already gates pre-sanitized borrowed variable lookup to Epoch34 through StacksEpochId::uses_pre_sanitized_variables and Clarity VM ValueRef handling. Changing Epoch33 costs or clone semantics for these representatives would alter historical consensus; a non-consensus Rust optimization would not move the tenure-throughput lens."
+  },
+  "global_materiality_note": "This family is highly material within the sampled Epoch33 slice: gl-api.open and gl-api.close account for 75.6% of run Clarity runtime, and lookup_variable of the Pyth decoder fold accumulator accounts for about 27.6B runtime units across those calls. It is epoch-bounded, not a current generic optimizer target for this replay.",
+  "targets": []
+}

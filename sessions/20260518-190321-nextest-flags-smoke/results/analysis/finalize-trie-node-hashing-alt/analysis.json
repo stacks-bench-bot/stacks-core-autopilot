@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "family_id": "finalize-trie-node-hashing-alt",
+  "status": "accepted",
+  "selection_lens": "commit_time",
+  "lens_disposition": {
+    "lens": "commit_time",
+    "status": "addressed",
+    "reason": "The promoted lens is real: all five representatives spend dominant Finalize (merkle+seal) wall time in deferred MARF trie node hashing, and the emitted target reduces commit-bucket seal work directly."
+  },
+  "global_materiality_note": "This is a broad commit-path target: calculate_node_hashes appears in 100% of sampled blocks with 677524 calls and 20.65s exclusive wall. It should benefit any workload that seals MARF blocks with deferred hashing, not just the five outlier representatives.",
+  "targets": [
+    {
+      "target_span": "calculate_node_hashes",
+      "bucket": "block_commit",
+      "fix_signature": "marf-seal-avoid-full-node-clones",
+      "hotspot": {
+        "span": "calculate_node_hashes",
+        "self_wall_us": 20653907,
+        "total_wall_us": 58811403,
+        "calls": 677524,
+        "location": "stackslib/src/chainstate/stacks/index/storage.rs:818"
+      },
+      "files": [
+        "stackslib/src/chainstate/stacks/index/storage.rs",
+        "stackslib/src/chainstate/stacks/index/node.rs",
+        "stackslib/src/chainstate/stacks/index/test/marf.rs",
+        "stackslib/src/chainstate/stacks/index/test/trie.rs"
+      ],
+      "evidence": "The run-wide profile ranks blockstack_lib::chainstate::stacks::index::storage::TrieRAM::calculate_node_hashes at 677524 calls, 58.811s summed inclusive wall and 20.654s exclusive wall, in 100% of 9000 sampled blocks. Each representative block follows Segment: Finalize (merkle+seal) -> mine_nakamoto_block -> seal -> seal_trie -> MarfTransaction::seal -> calculate_node_hashes. Representative finalize/calculate-node-hash timings: 0xc613f8cb finalize 111.389ms with top recursive calculate_node_hashes 93.095ms; 0xa636ba8a 99.195ms / 87.897ms; 0x1d89e048 99.055ms / 85.749ms; 0x41a2093c 103.692ms / 84.797ms; 0xe93cf098 73.341ms / 59.166ms. Code shows inner_seal_marf() in storage.rs calls calculate_node_hashes(storage_tx, 0), and calculate_node_hashes() immediately does self.get_nodetype(...)? .to_owned(), cloning the full TrieNodeType before writing consensus bytes and recursively hashing children. That clone is paid for every recursive node during the commit-bucket seal and is not a bucket anchor or non-target wrapper. The fix moves commit_time only; it does not change tx execution latency or any binding Clarity cost axis.",
+      "proposed_change": "Refactor TrieRAM::calculate_node_hashes so it does not clone the entire TrieNodeType on every recursive visit. Add a helper on TrieNodeType/node.rs that, while the node is borrowed, writes the exact same consensus bytes into the TrieHasher and copies only the child TriePtr slice needed for recursion into a lightweight scratch buffer (for example SmallVec/ArrayVec for Node4/Node16 and a boxed Vec only for Node48/Node256). Drop the node borrow before descending recursively, then iterate the copied TriePtr entries to append child hashes/backptr hashes and update deferred child node hashes. Keep the byte order identical to current write_consensus_bytes()+child-hash order, and preserve the Deferred/All mode write_node_hash behavior.",
+      "expected_improvement": {
+        "tx_latency": 0,
+        "tenure_throughput": 0,
+        "commit_time": 1.5
+      },
+      "risk": "medium",
+      "verification_plan": "Do not accept a root-hash change. Add or extend MARF tests that compare Immediate, Deferred, and All hash modes over node4/node16/node48/node256 tries, including backptr-heavy blocks. Run the existing chainstate MARF/trie tests and a targeted block replay on the five listed blocks, checking both end-to-end block success and that calculate_node_hashes exclusive wall falls without increasing commit flush spans enough to erase the win.",
+      "verification_replay": {
+        "blocks": [
+          "0xc613f8cb0006d1963f1bd891c7992da0d5db44091ab48e225e92ebbae09df024",
+          "0xa636ba8ad97f366ff6bdb4a50f25fd3c116e5aafd758336c4f21b4edcb257ef6",
+          "0x1d89e0480357303e5f6ac2e90ca9973e2bef038438e7594fabf90873b51df4af",
+          "0x41a2093cc795e49934ff25268f62e8c7a7cc13e904a4d45030e3a8ac72bfb729",
+          "0xe93cf098a806c42ec1631d138c54e5f234513e9926a48270f04cfb307c507f8f"
+        ],
+        "repetitions": 10,
+        "warmup": 10,
+        "rationale": "block-context MARF seal hotspot; five representatives where calculate_node_hashes dominates Finalize (merkle+seal)."
+      },
+      "consensus_breaking": false
+    }
+  ]
+}

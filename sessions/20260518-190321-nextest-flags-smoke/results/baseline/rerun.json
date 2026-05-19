@@ -1,0 +1,227 @@
+{
+  "success": true,
+  "duration_secs": 4.376163167,
+  "data": {
+    "end_time": "2026-05-14T14:46:49",
+    "git_hash": "3fb8c2f1c1a8dcf3fd6ef6244becc7e317273490",
+    "name": "baseline-20260514-160342",
+    "profiler_hot": [
+      {
+        "call_count": 7679280,
+        "context": "blockstack_lib::chainstate::stacks::index::trie::Trie",
+        "est_self_wall_us": 282092320.0,
+        "est_wall_us": 282472492.0,
+        "file": "stackslib/src/chainstate/stacks/index/trie.rs",
+        "line": 189,
+        "name": "walk_backptr",
+        "sample_count": 7679280
+      },
+      {
+        "call_count": 18000,
+        "context": "blockstack_lib::chainstate::stacks::index::file::TrieFile",
+        "est_self_wall_us": 66978994.0,
+        "est_wall_us": 66992989.0,
+        "file": "stackslib/src/chainstate/stacks/index/file.rs",
+        "line": 444,
+        "name": "append_trie_blob",
+        "sample_count": 18000
+      },
+      {
+        "call_count": 3325849,
+        "context": "blockstack_lib::chainstate::stacks::index::marf::MARF",
+        "est_self_wall_us": 54294369.0,
+        "est_wall_us": 301554150.0,
+        "file": "stackslib/src/chainstate/stacks/index/marf.rs",
+        "line": 1006,
+        "name": "walk",
+        "sample_count": 3325849
+      },
+      {
+        "call_count": 98584,
+        "context": "clarity::vm::database::sqlite::SqliteConnection",
+        "est_self_wall_us": 28303622.0,
+        "est_wall_us": 28303622.0,
+        "file": "clarity/src/vm/database/sqlite.rs",
+        "line": 133,
+        "name": "put",
+        "sample_count": 98584
+      },
+      {
+        "call_count": 677524,
+        "context": "blockstack_lib::chainstate::stacks::index::storage::TrieRAM",
+        "est_self_wall_us": 20653907.0,
+        "est_wall_us": 58811403.0,
+        "file": "stackslib/src/chainstate/stacks/index/storage.rs",
+        "line": 818,
+        "name": "calculate_node_hashes",
+        "sample_count": 677524
+      },
+      {
+        "call_count": 393206,
+        "context": "clarity::vm::database::clarity_db::ClarityDatabase",
+        "est_self_wall_us": 14355920.0,
+        "est_wall_us": 65998089.0,
+        "file": "clarity/src/vm/database/clarity_db.rs",
+        "line": 720,
+        "name": "fetch_metadata",
+        "sample_count": 393206
+      },
+      {
+        "call_count": 9000,
+        "context": "stacks_bench::replay",
+        "est_self_wall_us": 11599232.0,
+        "est_wall_us": 568089664.0,
+        "file": "stacks-bench/src/replay.rs",
+        "line": 343,
+        "name": "Segment",
+        "sample_count": 9000
+      },
+      {
+        "call_count": 9000,
+        "context": "blockstack_lib::chainstate::nakamoto::NakamotoChainState",
+        "est_self_wall_us": 10806514.0,
+        "est_wall_us": 96766170.0,
+        "file": "stackslib/src/chainstate/nakamoto/mod.rs",
+        "line": 3387,
+        "name": "advance_tip",
+        "sample_count": 9000
+      },
+      {
+        "call_count": 1513808,
+        "context": "clarity::vm::database::sqlite::SqliteConnection",
+        "est_self_wall_us": 8590031.0,
+        "est_wall_us": 8590031.0,
+        "file": "clarity/src/vm/database/sqlite.rs",
+        "line": 138,
+        "name": "get",
+        "sample_count": 1513808
+      },
+      {
+        "call_count": 18000,
+        "context": "blockstack_lib::chainstate::stacks::index::trie_sql",
+        "est_self_wall_us": 7742258.0,
+        "est_wall_us": 7742258.0,
+        "file": "stackslib/src/chainstate/stacks/index/trie_sql.rs",
+        "line": 256,
+        "name": "inner_write_external_trie_blob",
+        "sample_count": 18000
+      },
+      {
+        "call_count": 10372089,
+        "context": "clarity::vm",
+        "est_self_wall_us": 7471751.0,
+        "est_wall_us": 7471751.0,
+        "file": "clarity/src/vm/mod.rs",
+        "line": 209,
+        "name": "lookup_variable",
+        "sample_count": 10372089
+      },
+      {
+        "call_count": 460901,
+        "context": "clarity::builtin",
+        "est_self_wall_us": 5722804.0,
+        "est_wall_us": 613736531.0,
+        "file": "clarity/src/vm/mod.rs",
+        "line": 380,
+        "name": "let",
+        "sample_count": 460901
+      },
+      {
+        "call_count": 133139,
+        "context": "blockstack_lib::chainstate::stacks::index::trie_sql",
+        "est_self_wall_us": 4393747.003605336,
+        "est_wall_us": 4393747.003605336,
+        "file": "stackslib/src/chainstate/stacks/index/trie_sql.rs",
+        "line": 159,
+        "name": "get_block_identifier",
+        "sample_count": 16642
+      },
+      {
+        "call_count": 11212856,
+        "context": "clarity::vm",
+        "est_self_wall_us": 4344059.0,
+        "est_wall_us": 4344059.0,
+        "file": "clarity/src/vm/mod.rs",
+        "line": 257,
+        "name": "lookup_function",
+        "sample_count": 11212856
+      },
+      {
+        "call_count": 3325849,
+        "context": "blockstack_lib::chainstate::stacks::index::marf::MARF",
+        "est_self_wall_us": 4061496.0,
+        "est_wall_us": 305929222.0,
+        "file": "stackslib/src/chainstate/stacks/index/marf.rs",
+        "line": 1115,
+        "name": "get_path",
+        "sample_count": 3325849
+      },
+      {
+        "call_count": 9000,
+        "context": "blockstack_lib::chainstate::nakamoto::NakamotoChainState",
+        "est_self_wall_us": 2948750.0,
+        "est_wall_us": 38567550.0,
+        "file": "stackslib/src/chainstate/nakamoto/mod.rs",
+        "line": 4112,
+        "name": "inner_setup_block",
+        "sample_count": 9000
+      },
+      {
+        "call_count": 18000,
+        "context": "blockstack_lib::chainstate::stacks::index::trie::Trie",
+        "est_self_wall_us": 2632541.0,
+        "est_wall_us": 158275498.0,
+        "file": "stackslib/src/chainstate/stacks/index/trie.rs",
+        "line": 741,
+        "name": "inner_get_trie_ancestor_hashes_bytes",
+        "sample_count": 18000
+      },
+      {
+        "call_count": 393355,
+        "context": "clarity::vm::database::sqlite::SqliteConnection",
+        "est_self_wall_us": 2241775.0,
+        "est_wall_us": 2241775.0,
+        "file": "clarity/src/vm/database/sqlite.rs",
+        "line": 193,
+        "name": "get_metadata",
+        "sample_count": 393355
+      },
+      {
+        "call_count": 105707,
+        "context": "clarity::dispatch",
+        "est_self_wall_us": 2002336.0,
+        "est_wall_us": 481851572.0,
+        "file": "clarity/src/vm/contexts.rs",
+        "line": 1208,
+        "name": "execute-contract",
+        "sample_count": 105707
+      },
+      {
+        "call_count": 2696498,
+        "context": "clarity::builtin",
+        "est_self_wall_us": 1833673.0,
+        "est_wall_us": 51074545.0,
+        "file": "clarity/src/vm/mod.rs",
+        "line": 380,
+        "name": "get",
+        "sample_count": 2696498
+      }
+    ],
+    "run_id": 1,
+    "start_time": "2026-05-14T14:13:19",
+    "summary": {
+      "avg_block_duration_us": 63119,
+      "blocks": 9000,
+      "clarity_read_count": 919602,
+      "clarity_read_length": 1320835359,
+      "clarity_runtime": 49035479285,
+      "clarity_write_count": 45908,
+      "clarity_write_length": 2925367,
+      "storage_delta_bytes": 990783773,
+      "total_commit_us": 298884719,
+      "total_duration_us": 568072816,
+      "total_execution_us": 209346411,
+      "total_setup_us": 59833183
+    }
+  }
+}
