@@ -132,6 +132,41 @@ Drop any target whose `target_span` is:
 If a target's `proposed_change` is too vague for an implementer to act on
 without re-investigating, you have not drilled deep enough.
 
+# Evidence Provenance
+
+For every non-consensus target, include `evidence_queries[]`. This is the
+replayable DB trail the results-analyzer uses after candidate benchmarks run.
+Log every query you rely on for the mechanism claim, not only large traces.
+
+Each row must include:
+
+- `purpose`: why this query matters.
+- `sql_path`: bundled logical query path, exactly `queries/<name>.sql`
+  from `{{ queries_dir }}`.
+- `params`: string values you used for query parameters.
+- `output_path`: session-relative output path under
+  `analysis/{{ family_id }}/queries/`.
+- `key_observation`: numeric, specific signal extracted from the output
+  (for example, `baseline span p95 self_wall_us = 18400us across 9/10 samples`).
+- `supports_invocations`: ids from this target's
+  `verification_replay.invocations[]` that this evidence supports.
+
+Example row:
+
+```json
+{
+  "purpose": "Confirm RollbackWrapper::lookup dominates warm tx replay.",
+  "sql_path": "queries/span_run_drift.sql",
+  "params": {
+    "run_id": "{{ baseline_run_id }}",
+    "span_name": "RollbackWrapper::lookup"
+  },
+  "output_path": "analysis/{{ family_id }}/queries/rollback-wrapper-drift.csv",
+  "key_observation": "baseline p95 self_wall_us = 18400us across 9/10 samples",
+  "supports_invocations": ["warm-steady"]
+}
+```
+
 # Lens Disposition
 
 `lens_disposition.lens` must equal the candidate's `selection_lens`.
@@ -191,38 +226,76 @@ Calibration examples:
 
 # Targeted Replay
 
-`verification_replay` is optional but recommended when a small tx/block set can
-measure the hotspot directly.
+`verification_replay` is REQUIRED on every non-consensus (bench-eligible) target.
+It carries one or more `BenchInvocation`s — each invocation is one
+self-contained `stacks-bench bench run` call that Phase 1.8 + Phase 3 + Phase
+3.5 use to compare baseline vs candidate.
 
 ```json
 {
-  "txids": ["0x<64-hex>"],
-  "blocks": ["0x<64-hex>"],
-  "repetitions": 20,
-  "warmup": 10,
-  "rationale": "one line"
+  "rationale": "one-line overall strategy",
+  "invocations": [
+    {
+      "id": "cold-first-touch",
+      "label": "cold first-touch",
+      "purpose": "Isolate MARF node-cache miss overhead.",
+      "samples": { "kind": "txids", "txids": ["0x<64-hex>"] },
+      "warmup": 0,
+      "repetitions": 20,
+      "profiler": "rich",
+      "expected_signal": {
+        "axis": "tx_latency",
+        "direction": "improves",
+        "estimate_pct": 8.0,
+        "tolerance_pct": 3.0
+      }
+    }
+  ],
+  "suspected_spans": ["RollbackWrapper::lookup"]
 }
 ```
 
 Rules:
 
-- All hashes are 0x-prefixed 64-hex.
-- Heights and synthetic ids are never acceptable. Pick hashes from the same dim
-  columns used for `representative_ids`: `tx_hash` and `stacks_block_hash`.
-- Use `txids` for per-tx execution hotspots.
-- Use `blocks` for whole-block or commit/finalize hotspots.
-- Use both only when both paths require measurement.
-- Omit when the hotspot is too diffuse or needs more than about 16 examples.
-- `repetitions` must be in `[1, 200]`; typical values are 20 for txid mode and
-  10 for block mode.
-- `warmup` must be in `[0, 200]`; omit for the coordinator default of 10, use 0
-  only when cold-cache behavior is the signal, and raise it for expensive blocks
-  that need cache settling. This is downstream replay guidance only — do not run
-  stacks-bench yourself.
+- One invocation per measurement intent. Decompose by cache regime
+  (cold vs warm), by sample mode (txids vs blocks), or by sample set —
+  not by repetition count. Operator cap is **{{max_invocations_per_target}}**
+  invocations per target (analyzer output rejected after the Codex run
+  if exceeded); the schema hard max is 16.
+- `id` is lowercase kebab-case, max 40 chars, unique within the target.
+  Stable on-disk path (`verify/<target>/<id>/`, `optimize/<target>/<id>/`)
+  and used as the join key on the results-analyzer's per-invocation
+  breakdown.
+- `samples.kind` is one of:
+  - `"txids"` — 1-16 `0x`-prefixed 64-hex tx hashes from the `tx_hash`
+    column. Per-tx execution hotspots.
+  - `"blocks"` — 1-16 `0x`-prefixed 64-hex stacks index block hashes
+    from the `stacks_block_hash` column. Whole-block or commit hotspots.
+  - `"block_range"` — `start_at` (>=1) + `count` (1..=50000). Use when
+    the analyzer wants a canonical range rather than a hand-picked set.
+- Heights and synthetic ids are NEVER acceptable for `txids` / `blocks`.
+- `repetitions` in `[1, 200]`. Typical: 20 for txid mode, 10 for block mode.
+- `warmup` in `[0, 200]`. 0 for cold-cache signal, 10 for steady-state.
+- `profiler` is `"rich"` today (no flag changes; future variants will lower
+  profile overhead). Must match across baseline and candidate per
+  invocation — that's the flag-symmetry invariant.
+- `expected_signal` is the analyzer's prediction the results-analyzer
+  (Phase 3.5) checks against:
+  - `direction`: `improves` (this invocation should measure faster on
+    the chosen `axis` than baseline), `neutral` (no movement expected
+    — useful as a control invocation that pins the mechanism), or
+    `regresses` (rare; this invocation is expected to look worse,
+    e.g. when the fix trades cold-path cost for warm-path gain).
+  - `estimate_pct` + `tolerance_pct` are optional; provide them when you
+    can defend a number. Magnitude mismatch beyond tolerance demotes the
+    verdict toward `mixed`.
 
-Good rationales are short and specific, e.g. "per-tx Clarity runtime hotspot;
-three representative swaps with comparable cost" or "block-context seal path;
-four commit-bucket blocks where the span dominates".
+`suspected_spans` is an optional list of span names you expect the fix to
+move. Used by the results-analyzer as a hint; not enforced by any gate.
+
+Good rationales connect the invocation set to the proposed mechanism, e.g.
+"cold-first-touch isolates MARF node-cache misses; warm-steady measures
+the steady-state benefit of the read-through cache."
 
 # Consensus-Breaking Targets
 
@@ -290,24 +363,32 @@ tx execution and materialized at block commit.
 
 For accepted analyses:
 
+<!-- lint:example schema="analysis" -->
+
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 4,
   "family_id": "{{ family_id }}",
-  "selection_lens": "...",
   "status": "accepted",
-  "lens_disposition": { "lens": "...", "status": "addressed" },
-  "targets": []
+  "selection_lens": "tx_latency",
+  "lens_disposition": {
+    "lens": "tx_latency",
+    "status": "not_actionable",
+    "reason": "trace signal is real but the hot span is consensus-fixed VM primitive cost"
+  },
+  "targets": [],
+  "global_materiality_note": "No action for this family beyond the documented blocker."
 }
 ```
 
 For rejected analyses:
 
+<!-- lint:example schema="analysis" -->
+
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 4,
   "family_id": "{{ family_id }}",
-  "selection_lens": "...",
   "status": "rejected",
   "reason": "specific code-level reason"
 }

@@ -71,22 +71,31 @@ For N > 1 contributors:
 - `hotspot`: contributor with largest `total_wall_us`.
 - `files`: union, most-mentioned first.
 - `evidence`: shared finding plus strongest citation.
+- `evidence_queries`: exact union of contributor `evidence_queries[]`. Do not
+  rewrite, summarize, invent, or drop query provenance; Phase 3.5 relies on
+  these rows to replay the analyzer's mechanism evidence.
 - `proposed_change`: most concrete wording.
 - `expected_improvement`: median per axis. Compute each axis independently;
   do not collapse the vector, average the axes, or dot-product it.
 - `risk`: most cautious risk.
 - `verification_plan`: union.
-- `verification_replay`: union txids/blocks, max repetitions, max explicit
-  `warmup`, joined rationales. If no contributor set `warmup`, omit it and let
-  the bench default apply. Cap `txids` and `blocks` at 16 entries each; if
-  exceeded, drop the lowest-cost representatives.
+- `verification_replay`: required on every non-consensus (bench-eligible)
+  merged target. Merge contributors' `invocations[]` by `id` — when two
+  analyzers emit the same id, prefer the contributor whose `samples`
+  variant is most specific (txids/blocks > block_range) and take
+  `max(repetitions)` + `max(warmup)`. When contributors disagree on
+  `expected_signal.direction`, drop the invocation and record the
+  disagreement in `contributor_differences`. Cap at 16 invocations per
+  target — if exceeded, keep the highest-confidence ones (cited in
+  multiple analyses or matching the strongest hotspot). Merge
+  `rationale`s into one cohesive line and union `suspected_spans`.
 - `merged_from`: all contributors in first-seen order.
 - `convergence_count`: `merged_from.length`.
 - `merge_notes`: one short provenance sentence.
 - `contributor_differences`: only meaningful disagreements.
 
-For N = 1, copy the contributor directly; set `id = fix_signature`,
-`merged_from`, and `convergence_count = 1`.
+For N = 1, copy the contributor directly, including `evidence_queries[]`; set
+`id = fix_signature`, `merged_from`, and `convergence_count = 1`.
 
 # Consensus Routing
 
@@ -137,16 +146,20 @@ Before writing JSON, verify:
    of how many targets it emitted;
 3. no cross-bucket, intra-analysis, or cross-consensus-class merges;
 4. derived `delivery_mode` and `bench_eligible` are consistent;
-5. `convergence_count = 1` is accepted when no true equivalent exists;
-6. schema validation against `{{ optimization_targets_schema_path }}` passes.
+5. every merged target's `evidence_queries[]` is the exact union of its
+   contributors' query rows;
+6. `convergence_count = 1` is accepted when no true equivalent exists;
+7. schema validation against `{{ optimization_targets_schema_path }}` passes.
 
 # Output
 
 Top-level JSON:
 
+<!-- lint:example schema="optimization-targets" -->
+
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 4,
   "session_id": "{{ opt_session_id }}",
   "baseline_run_id": {{ baseline_run_id }},
   "baseline_rerun_id": {{ baseline_rerun_id }},
