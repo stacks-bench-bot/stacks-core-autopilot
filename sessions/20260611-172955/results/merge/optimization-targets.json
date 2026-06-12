@@ -1,0 +1,643 @@
+{
+  "schema_version": 4,
+  "session_id": "20260611-172955",
+  "baseline_run_id": 6,
+  "baseline_rerun_id": 6,
+  "noise_floor_pct": 1,
+  "merge_method": "llm",
+  "merge_model": "gpt-5.5",
+  "targets": [
+    {
+      "id": "clarity-side-store-bulk-put",
+      "merged_from": [
+        {
+          "family_id": "dlmm-add-liquidity-multi-throughput",
+          "target_index": 0
+        }
+      ],
+      "convergence_count": 1,
+      "target_span": "put",
+      "bucket": "block_processing",
+      "hotspot": {
+        "span": "put",
+        "self_wall_us": 297586640,
+        "total_wall_us": 297586640,
+        "calls": 1038880,
+        "location": "clarity/src/vm/database/sqlite.rs:133"
+      },
+      "files": [
+        "clarity/src/vm/database/sqlite.rs",
+        "stackslib/src/clarity_vm/database/marf.rs",
+        "clarity/src/vm/database/key_value_wrapper.rs",
+        "clarity/src/vm/database/clarity_store.rs"
+      ],
+      "evidence": "Representative traces 37ad67a3, 408f81be, 92639041, and 9f0416be all run under Transaction -> try_mine_tx_with_len -> PersistentWritableMarfStore::put_all_data after VM execution. That span loops over 1401-1502 staged edits and spends 515-770 ms almost entirely in SqliteConnection::put. The code path is RollbackWrapper::commit collecting bottom-level edits, calling ClarityBackingStore::put_all_data, then PersistentWritableMarfStore::put_all_data converting each value to a MARFValue and invoking SqliteConnection::put once per item before MARF::insert_batch. SqliteConnection::put is a single REPLACE INTO data_table statement via conn.execute, so this target is storage mechanics, not Clarity cost accounting. The fifth representative, 74a98eed, was inspected and is instead dominated by MARF Trie::walk_backptr inside VM reads; it does not invalidate the put target but should not be used as the primary replay sample for it.",
+      "evidence_queries": [
+        {
+          "purpose": "Rank the storage write span in the full baseline run.",
+          "sql_path": "queries/top_spans_by_self_wall.sql",
+          "params": {
+            "limit": "100",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/top-spans-by-self-wall.csv",
+          "key_observation": "SqliteConnection::put is span_id 60 with 297586.64 ms self wall across 1038880 calls; avg self is 286.449 us/call.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Confirm add-liquidity-multi is the promoted throughput family and identify the near-binding axis.",
+          "sql_path": "queries/top_clarity_consumers_by_contract.sql",
+          "params": {
+            "limit": "25",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/top-clarity-consumers.csv",
+          "key_observation": "add-liquidity-multi has 592 calls and consumes 45.44% of run write_count, 44.09% write_length, 37.92% read_length, 35.68% read_count, and 29.86% runtime.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "List concrete add-liquidity-multi transactions and their Clarity write volume.",
+          "sql_path": "queries/txs_for_contract.sql",
+          "params": {
+            "contract_name": "dlmm-liquidity-router-v-1-2",
+            "function_name": "add-liquidity-multi",
+            "issuer_address": "SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD",
+            "limit": "100",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/txs-add-liquidity-multi.csv",
+          "key_observation": "The top five representatives run for 1937-2243 ms and carry 1399-1650 Clarity write_count each.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 37ad67a3 and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "37ad67a35e440ee7bb3f35620c3ccb26937103eb446b6a15f9b7814fedef9637"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-37ad67a3.csv",
+          "key_observation": "put_all_data is 565.408 ms; child SqliteConnection::put is 539.374 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 408f81be and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "408f81be04c3bbf1cf0593233fa75334536c68251e851153322db976d3085898"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-408f81be.csv",
+          "key_observation": "put_all_data is 540.743 ms; child SqliteConnection::put is 515.217 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 92639041 and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "9263904171da1a1a3d3b7e538b12b7c8984d0aa221a6588567f933ffa6a995e7"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-92639041.csv",
+          "key_observation": "put_all_data is 791.306 ms; child SqliteConnection::put is 769.613 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 9f0416be and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "9f0416becf87bb90dcb0bcb2c6e9641efc97342c159b0d6d6937fe1e93f9f610"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-9f0416be.csv",
+          "key_observation": "put_all_data is 541.240 ms; child SqliteConnection::put is 517.346 ms self across 1401 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Characterize per-call shape for the put span.",
+          "sql_path": "queries/span_per_sample_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "60"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/span-put-sample-distribution.csv",
+          "key_observation": "SqliteConnection::put has p95 self 417.44 us and p99 self 569.0 us across 1038880 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Confirm put can dominate individual replay blocks.",
+          "sql_path": "queries/span_per_block_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "60"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/span-put-block-distribution.csv",
+          "key_observation": "SqliteConnection::put has max per-block self wall 978.535 ms and p99 block self wall 491.435 ms.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        }
+      ],
+      "proposed_change": "Add a bulk side-store write helper beside SqliteConnection::put, for example SqliteConnection::put_many(conn, items), that prepares the REPLACE INTO data_table (key, value) VALUES (?, ?) statement once against the existing rusqlite Transaction and executes it for all converted side-store values. Use that helper in PersistentWritableMarfStore::put_all_data after building the MARF keys/values, and in MemoryBackingStore::put_all_data for parity. Keep MARF::insert_batch unchanged and preserve the exact key/value strings and error mapping.",
+      "expected_improvement": {
+        "tx_latency": 5.0,
+        "tenure_throughput": 0.0,
+        "commit_time": 0.0
+      },
+      "risk": "medium",
+      "verification_plan": "Check Clarity backing-store unit coverage for put/get round trips, rollback commit behavior, and MARF side-store reads by hash. Add focused regression coverage if no test asserts that batched put_all_data writes exactly the same data_table rows as individual puts. Then run the targeted replay below and compare put and put_all_data spans, plus transaction duration.",
+      "verification_replay": {
+        "rationale": "Replay the representatives where post-VM side-store writes dominate, then compare transaction latency and the put/put_all_data spans.",
+        "invocations": [
+          {
+            "id": "write-heavy-txs",
+            "label": "write-heavy txs",
+            "purpose": "Measure whether batching side-store writes reduces the SQLite put-heavy add-liquidity executions.",
+            "samples": {
+              "kind": "txids",
+              "txids": [
+                "0x37ad67a35e440ee7bb3f35620c3ccb26937103eb446b6a15f9b7814fedef9637",
+                "0x408f81be04c3bbf1cf0593233fa75334536c68251e851153322db976d3085898",
+                "0x9263904171da1a1a3d3b7e538b12b7c8984d0aa221a6588567f933ffa6a995e7",
+                "0x9f0416becf87bb90dcb0bcb2c6e9641efc97342c159b0d6d6937fe1e93f9f610"
+              ]
+            },
+            "warmup": 0,
+            "repetitions": 20,
+            "profiler": "rich",
+            "expected_signal": {
+              "axis": "tx_latency",
+              "direction": "improves",
+              "estimate_pct": 5.0,
+              "tolerance_pct": 4.0
+            }
+          }
+        ],
+        "suspected_spans": [
+          "put",
+          "put_all_data"
+        ]
+      },
+      "consensus_breaking": false,
+      "delivery_mode": "normal_pr",
+      "bench_eligible": true,
+      "merge_notes": "Singleton target retained; no true duplicate structural change was found.",
+      "contributor_differences": null
+    },
+    {
+      "id": "rollback-wrapper-at-block-read-cache",
+      "merged_from": [
+        {
+          "family_id": "dual-stacking-snapshot-balance-fanout",
+          "target_index": 0
+        }
+      ],
+      "convergence_count": 1,
+      "target_span": "get_data",
+      "bucket": "block_processing",
+      "hotspot": {
+        "span": "get_data",
+        "self_wall_us": 5517700,
+        "total_wall_us": 531004890,
+        "calls": 11318323,
+        "location": "stackslib/src/clarity_vm/database/marf.rs:852"
+      },
+      "files": [
+        "clarity/src/vm/database/key_value_wrapper.rs",
+        "stackslib/src/clarity_vm/database/marf.rs",
+        "clarity/src/vm/contexts.rs",
+        "clarity/src/vm/database/clarity_db.rs"
+      ],
+      "evidence": "All five representatives follow the same tree: Transaction -> try_mine_tx_with_len -> with_abort_callback -> execute-contract dual-stacking-v2_1_0.capture-snapshot-balances-optimizer -> map -> capture-participant-balances-optimizer -> capture-participant-snapshot. The hot child is 60 at-block evaluations per tx, totaling about 1.48s-1.56s of nested work in the trace summaries. Under those at-block closures, repeated get_data/get_value calls enter PersistentWritableMarfStore::get_data and then MARF get_by_key/get_path/walk/walk_backptr. Representative totals for PersistentWritableMarfStore::get_data are about 478ms-539ms per tx with roughly 2,960-3,165 calls, while MARF get_by_key/get_path/walk totals are about 548ms-596ms per tx with roughly 4,900-5,200 calls. Code confirms the handle: ExecutionState::evaluate_at_block sets a historical block hash with query_pending_data=false, RollbackWrapper then bypasses pending writes and calls the backing store for every materialized read, and PersistentWritableMarfStore::get_data performs marf.get(chain_tip, key) plus side-store lookup. The existing RollbackWrapper maps only cache pending writes, not materialized historical store reads. The top Clarity-cost query shows this family's max axis share is 5.48%, so this target moves wall-time latency, not tenure budget.",
+      "evidence_queries": [
+        {
+          "purpose": "Confirm the family size, top representative durations, and stable per-call Clarity read shape.",
+          "sql_path": "queries/txs_for_contract.sql",
+          "params": {
+            "contract_name": "dual-stacking-v2_1_0",
+            "function_name": "capture-snapshot-balances-optimizer",
+            "issuer_address": "SP1HFCRKEJ8BYW4D0E3FAWHFDX8A25PPAA83HWWZ9",
+            "limit": "100",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/dual-stacking-txs.csv",
+          "key_observation": "59 calls; top five representative durations are 1688.226ms, 1627.729ms, 1615.264ms, 1610.986ms, and 1605.459ms, with about 5.5k read_count each.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Place this contract function in the run-level latency distribution.",
+          "sql_path": "queries/top_contract_calls.sql",
+          "params": {
+            "limit": "50",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/top-contract-calls.csv",
+          "key_observation": "dual-stacking-v2_1_0.capture-snapshot-balances-optimizer ranks 4th by contract-call wall time with 59 calls, 83449.53ms total, and 1414.399ms average.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Confirm this is not a tenure-throughput target on a binding Clarity-cost axis.",
+          "sql_path": "queries/top_clarity_consumers_by_contract.sql",
+          "params": {
+            "limit": "50",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/top-clarity-consumers.csv",
+          "key_observation": "family max_axis_share_pct is 5.48%; runtime is the largest family share at 5.48%, while read_length is 1.98%, write_count 0.55%, and write_length 0.21%.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Identify the shared storage spans the target should move.",
+          "sql_path": "queries/top_spans_by_self_wall.sql",
+          "params": {
+            "limit": "60",
+            "run_id": "6"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/top-spans-self.csv",
+          "key_observation": "PersistentWritableMarfStore::get_data has 531004.89ms total wall over 11318323 calls; Trie::walk_backptr has 932669.18ms self wall over 48440451 calls.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 0x9728154c and confirm at-block historical reads dominate the tx tree.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "9728154c1239b04662827d03388ded4608eb53f42f24f36c7a0c9f05d5478a23"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/trace-tx-9728154c.csv",
+          "key_observation": "tx wall is 1688.226ms; capture-participant-snapshot is 1643.659ms; trace aggregation shows 60 at-block calls totaling 1562.102ms and PersistentWritableMarfStore::get_data rows totaling 489.411ms.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 0xac4eaf26 and confirm the same at-block/MARF read shape.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "ac4eaf264a66347202d171f77b1e88dde72e1aff48000e83b343ef62e15e235a"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/trace-tx-ac4eaf26.csv",
+          "key_observation": "tx wall is 1627.729ms; capture-participant-snapshot is 1589.582ms; trace aggregation shows 60 at-block calls totaling 1509.249ms and PersistentWritableMarfStore::get_data rows totaling 485.349ms.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 0xbd001e97 and confirm the same at-block/MARF read shape.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "bd001e976f03206f10e6404abe289f73e8a3c4da8db5ac7d035763c0bee65171"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/trace-tx-bd001e97.csv",
+          "key_observation": "tx wall is 1615.264ms; capture-participant-snapshot is 1573.540ms; trace aggregation shows 60 at-block calls totaling 1497.216ms and PersistentWritableMarfStore::get_data rows totaling 484.760ms.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 0x7b5f49a4 and confirm the same at-block/MARF read shape.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "7b5f49a4fdc3164fc923982d7619608831c0847c476d4761708d75fc5df1f3fa"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/trace-tx-7b5f49a4.csv",
+          "key_observation": "tx wall is 1610.986ms; capture-participant-snapshot is 1574.605ms; trace aggregation shows 60 at-block calls totaling 1497.446ms and PersistentWritableMarfStore::get_data rows totaling 538.753ms.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 0x695be269 and confirm the same at-block/MARF read shape.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "max_rows": "2000",
+            "min_wall_ms": "1",
+            "run_id": "6",
+            "stacks_tx_hash": "695be269b728d5d55e07191115d513658a05dd97e266e59506cc38e3f733c11a"
+          },
+          "output_path": "analysis/dual-stacking-snapshot-balance-fanout/queries/trace-tx-695be269.csv",
+          "key_observation": "tx wall is 1605.459ms; capture-participant-snapshot is 1568.942ms; trace aggregation shows 60 at-block calls totaling 1482.623ms and PersistentWritableMarfStore::get_data rows totaling 478.082ms.",
+          "supports_invocations": [
+            "representative-heavy"
+          ]
+        }
+      ],
+      "proposed_change": "Add a transaction-local read-through cache to RollbackWrapper for materialized backing-store reads while query_pending_data is false. Track the active block hash after successful set_block_hash, and cache raw store results by (active_block_hash, key) for get_data/get_value and by (active_block_hash, contract, metadata_key) for metadata reads. Do not cache reads that consult pending data, do not cache proof reads, and clear or scope the cache with the RollbackWrapper lifetime so it cannot cross transactions. Refactor get_data and get_value through a shared raw-read helper so cached hex/string values still deserialize through the existing Clarity type paths and preserve cost accounting.",
+      "expected_improvement": {
+        "tx_latency": 6.0,
+        "tenure_throughput": 0.0,
+        "commit_time": 0.0
+      },
+      "risk": "medium",
+      "verification_plan": "Add focused RollbackWrapper/ClarityDatabase tests that repeated at-block reads return the same values before and after pending writes in the surrounding tx, that restored block hash resumes pending-data visibility, and that metadata and value reads remain isolated by block hash. Then run targeted replay on the representative txids and compare get_data, get_by_key, walk, walk_backptr, and tx latency.",
+      "verification_replay": {
+        "rationale": "The cache is intra-transaction, so the representative tx replay directly measures whether repeated at-block historical reads avoid backing MARF work.",
+        "invocations": [
+          {
+            "id": "representative-heavy",
+            "label": "representative heavy txs",
+            "purpose": "Measure tx-latency and MARF-read reduction on the five triaged snapshot optimizer transactions.",
+            "samples": {
+              "kind": "txids",
+              "txids": [
+                "0x9728154c1239b04662827d03388ded4608eb53f42f24f36c7a0c9f05d5478a23",
+                "0xac4eaf264a66347202d171f77b1e88dde72e1aff48000e83b343ef62e15e235a",
+                "0xbd001e976f03206f10e6404abe289f73e8a3c4da8db5ac7d035763c0bee65171",
+                "0x7b5f49a4fdc3164fc923982d7619608831c0847c476d4761708d75fc5df1f3fa",
+                "0x695be269b728d5d55e07191115d513658a05dd97e266e59506cc38e3f733c11a"
+              ]
+            },
+            "warmup": 0,
+            "repetitions": 20,
+            "profiler": "rich",
+            "expected_signal": {
+              "axis": "tx_latency",
+              "direction": "improves",
+              "estimate_pct": 6.0,
+              "tolerance_pct": 4.0
+            }
+          }
+        ],
+        "suspected_spans": [
+          "get_data",
+          "get_value",
+          "get_by_key",
+          "get_path",
+          "walk",
+          "walk_backptr"
+        ]
+      },
+      "consensus_breaking": false,
+      "delivery_mode": "normal_pr",
+      "bench_eligible": true,
+      "merge_notes": "Singleton target retained; no true duplicate structural change was found.",
+      "contributor_differences": null
+    },
+    {
+      "id": "marf-deferred-seal-postorder-hash-cache",
+      "merged_from": [
+        {
+          "family_id": "marf-trie-seal-hash-recalculation",
+          "target_index": 0
+        }
+      ],
+      "convergence_count": 1,
+      "target_span": "calculate_node_hashes",
+      "bucket": "block_commit",
+      "hotspot": {
+        "span": "calculate_node_hashes",
+        "self_wall_us": 381328360,
+        "total_wall_us": 1272836450,
+        "calls": 2132356,
+        "location": "stackslib/src/chainstate/stacks/index/storage.rs:818"
+      },
+      "files": [
+        "stackslib/src/chainstate/stacks/index/storage.rs",
+        "stackslib/src/chainstate/stacks/index/node.rs",
+        "stackslib/src/chainstate/stacks/index/cache.rs",
+        "stackslib/src/chainstate/stacks/index/test/storage.rs",
+        "stackslib/src/chainstate/stacks/index/test/marf.rs"
+      ],
+      "evidence": "Run 6 ranks TrieRAM::calculate_node_hashes as the #2 exclusive span: 381.328s self wall, 1,272.836s inclusive wall, 2,132,356 calls, 100% block recurrence, and no transaction association. The per-block distribution is broad rather than a single spike: 15,000/15,000 blocks, p50 18.794ms, p95 58.877ms, p99 118.061ms, top3 share 2.6%. All five representatives are the top five blocks for this span. In each trace, calculate_node_hashes sits under Segment: Finalize (merkle+seal) and dominates the finalize subtree: 5,032.9ms of 5,053.2ms for 0x06f198..., 3,476.5ms of 3,518.2ms for 0x35c1c0..., 2,664.3ms of 2,688.4ms for 0x9407bf..., 1,524.2ms of 1,549.2ms for 0x615df0..., and 1,324.1ms of 1,344.3ms for 0xa2ebb2.... The suspected inner_get_trie_ancestor_hashes_bytes path is present but much smaller in these traces, topping out at 38.736ms, so it is not the primary handle. Code in TrieRAM::inner_seal_marf calls calculate_node_hashes only in Deferred/All mode; calculate_node_hashes clones each node with get_nodetype(...).to_owned(), serializes node consensus bytes, scans ptrs, recursively hashes same-block children, looks up ancestor block hashes via the existing get_block_hash_caching cache, and writes deferred hashes back. Existing code already caches block-id to block-hash lookups, so the actionable work is reducing the deferred seal walk's clone/recursion/pointer traversal overhead while preserving the identical hash byte stream.",
+      "evidence_queries": [
+        {
+          "purpose": "Rank run-level hotspot and capture self/inclusive wall time for the target span.",
+          "sql_path": "queries/top_spans_by_self_wall.sql",
+          "params": {
+            "limit": "80",
+            "run_id": "6"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/top-spans-self-wall.csv",
+          "key_observation": "calculate_node_hashes: 381328.36ms self wall, 1272836.45ms inclusive wall, 2132356 calls, avg self 178.83us/call.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Confirm the span is block-level commit work recurring across the whole sampled workload.",
+          "sql_path": "queries/span_recurrence.sql",
+          "params": {
+            "run_id": "6"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/span-recurrence.csv",
+          "key_observation": "calculate_node_hashes appears in 15000/15000 blocks (100.0%) and 0 transactions.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Show the signal is broad and not top-block dominated.",
+          "sql_path": "queries/span_per_block_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "84"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/calculate-node-hashes-block-distribution.csv",
+          "key_observation": "15000 blocks, p50 18.794ms, p95 58.877ms, p99 118.061ms, top3 share 2.6%.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Identify stable replay block hashes for the hottest representatives.",
+          "sql_path": "queries/top_blocks_for_span.sql",
+          "params": {
+            "limit": "20",
+            "run_id": "6",
+            "span_id": "84"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/calculate-node-hashes-top-blocks.csv",
+          "key_observation": "The five candidate representatives are the top five blocks for calculate_node_hashes, with self wall 4457.745ms, 3104.324ms, 2386.753ms, 1358.211ms, and 1169.588ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the hottest representative and verify calculate_node_hashes dominates finalize rather than an anchor.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "max_rows": "1200",
+            "min_wall_ms": "2",
+            "run_id": "6",
+            "stacks_block_hash": "0x06f1987a4a34a5f1ab301b9291700ffd6edfd9b555b357c30446c62621a8b547"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-06f198.csv",
+          "key_observation": "Segment: Finalize wall 5053.211ms; descendant calculate_node_hashes wall 5032.916ms; inner_get_trie_ancestor_hashes_bytes wall 17.820ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the second representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "max_rows": "1200",
+            "min_wall_ms": "2",
+            "run_id": "6",
+            "stacks_block_hash": "0x35c1c0ee7fe2def3b6f3f8cebd733439ae71950d267185888467b629e4fd0bdb"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-35c1c0.csv",
+          "key_observation": "Segment: Finalize wall 3518.175ms; descendant calculate_node_hashes wall 3476.476ms; inner_get_trie_ancestor_hashes_bytes wall 38.736ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the third representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "max_rows": "1200",
+            "min_wall_ms": "2",
+            "run_id": "6",
+            "stacks_block_hash": "0x9407bf9e1bbe701776f97ffcdf9f2d36f5f786d03b78c61d0af832a9d556e722"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-9407bf.csv",
+          "key_observation": "Segment: Finalize wall 2688.394ms; descendant calculate_node_hashes wall 2664.332ms; inner_get_trie_ancestor_hashes_bytes wall 20.975ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the fourth representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "max_rows": "1200",
+            "min_wall_ms": "2",
+            "run_id": "6",
+            "stacks_block_hash": "0x615df05829a3d8184b3001020c2b9a969277d9a40c8556c167d150a2554e942c"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-615df0.csv",
+          "key_observation": "Segment: Finalize wall 1549.222ms; descendant calculate_node_hashes wall 1524.160ms; inner_get_trie_ancestor_hashes_bytes wall 23.543ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the fifth representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "max_rows": "1200",
+            "min_wall_ms": "2",
+            "run_id": "6",
+            "stacks_block_hash": "0xa2ebb236804dcf78a43de7db54afea63c0ee145adde25b50c02e1c658fd08b7a"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-a2ebb2.csv",
+          "key_observation": "Segment: Finalize wall 1344.289ms; descendant calculate_node_hashes wall 1324.119ms; inner_get_trie_ancestor_hashes_bytes wall 17.302ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        }
+      ],
+      "proposed_change": "Refactor TrieRAM::calculate_node_hashes into a deferred seal hasher that computes the same post-order hashes with an explicit work stack or per-node memo indexed by TrieRAM slot. While a node is borrowed, serialize the node consensus prefix and collect the minimal child descriptors needed for hashing, then drop the borrow before walking children; store computed hashes in a parallel Vec<Option<TrieHash>> or equivalent and write them back to TrieRAM once computed. This avoids cloning full TrieNodeType values and repeatedly scanning large pointer arrays during recursive seal, while preserving get_block_hash_caching for backptrs, write_node_hash semantics for Deferred mode, and the All-mode equality assertion against eager hashing.",
+      "expected_improvement": {
+        "tx_latency": 0.0,
+        "tenure_throughput": 0.0,
+        "commit_time": 8.0
+      },
+      "risk": "medium",
+      "verification_plan": "Use existing MARF storage tests that compare deferred/immediate/all hash modes and merkle verification, especially stackslib/src/chainstate/stacks/index/test/storage.rs and stackslib/src/chainstate/stacks/index/test/marf.rs. Add focused tests for root hash equality across Immediate, Deferred, and All modes over Node4/16/48/256 backptr-heavy tries. Then run the targeted replay below and compare calculate_node_hashes plus block commit/finalize timing; no Clarity cost movement is expected.",
+      "verification_replay": {
+        "rationale": "Replay the five hottest finalize blocks to isolate deferred MARF seal hashing while keeping profiler detail for span-level verification.",
+        "invocations": [
+          {
+            "id": "hot-finalize-blocks",
+            "label": "hot finalize blocks",
+            "purpose": "Measure whether the deferred seal hasher reduces commit/finalize time on blocks where calculate_node_hashes dominates.",
+            "samples": {
+              "kind": "blocks",
+              "blocks": [
+                "0x06f1987a4a34a5f1ab301b9291700ffd6edfd9b555b357c30446c62621a8b547",
+                "0x35c1c0ee7fe2def3b6f3f8cebd733439ae71950d267185888467b629e4fd0bdb",
+                "0x9407bf9e1bbe701776f97ffcdf9f2d36f5f786d03b78c61d0af832a9d556e722",
+                "0x615df05829a3d8184b3001020c2b9a969277d9a40c8556c167d150a2554e942c",
+                "0xa2ebb236804dcf78a43de7db54afea63c0ee145adde25b50c02e1c658fd08b7a"
+              ]
+            },
+            "warmup": 0,
+            "repetitions": 10,
+            "profiler": "rich",
+            "expected_signal": {
+              "axis": "commit_time",
+              "direction": "improves",
+              "estimate_pct": 8.0,
+              "tolerance_pct": 5.0
+            }
+          }
+        ],
+        "suspected_spans": [
+          "calculate_node_hashes",
+          "get_block_hash"
+        ]
+      },
+      "consensus_breaking": false,
+      "delivery_mode": "normal_pr",
+      "bench_eligible": true,
+      "merge_notes": "Singleton target retained; no true duplicate structural change was found.",
+      "contributor_differences": null
+    }
+  ],
+  "rejected_by_merge": [],
+  "lens_dispositions": [
+    {
+      "family_id": "dlmm-add-liquidity-multi-throughput",
+      "lens": "tenure_throughput",
+      "status": "not_actionable",
+      "reason": "The throughput signal is real: add-liquidity-multi accounts for 29.86% of run runtime, 35.68% read_count, 37.92% read_length, 45.44% write_count, and 44.09% write_length, with write_count the promoted near-binding axis. Code and traces show this comes from the contract's 150-iteration fold over nested dlmm-core add-liquidity calls and their consensus-visible map/var writes. The actionable node-side storage handle below reduces wall time in SQLite side-store writes, but it does not reduce deterministic Clarity write_count/read_length/write_length without a contract change or HIP-class cost/VM behavior change."
+    },
+    {
+      "family_id": "dual-stacking-snapshot-balance-fanout",
+      "lens": "tx_latency",
+      "status": "addressed",
+      "reason": "Representative tx traces show the promoted latency is real and dominated by repeated at-block historical reads; a transaction-local materialized-read cache can reduce repeated PersistentWritableMarfStore::get_data calls and their MARF walk descendants without changing consensus-visible Clarity behavior."
+    },
+    {
+      "family_id": "marf-trie-seal-hash-recalculation",
+      "lens": "commit_time",
+      "status": "addressed",
+      "reason": "The promoted signal is real commit-bucket work: representative traces put deferred MARF seal hashing under Segment: Finalize (merkle+seal), and the handle is a concrete Rust function rather than a bucket wrapper."
+    }
+  ]
+}

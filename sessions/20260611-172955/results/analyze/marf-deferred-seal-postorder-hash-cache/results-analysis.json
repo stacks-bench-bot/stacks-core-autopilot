@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "marf-deferred-seal-postorder-hash-cache",
+  "axis": "commit_time",
+  "verdict": "mixed",
+  "confidence": "medium",
+  "headline_improvement_pct": 1.004,
+  "headline_rationale": "The deferred MARF seal hashing mechanism moved in the right direction, but measured commit time improved only 1.004%, below the 8% +/- 5% hypothesis window.",
+  "pr_body_summary": "Benchmark replay shows the refactor moved the intended MARF seal hashing path, but the end-to-end commit-time win is smaller than predicted. Across the hot finalize block replay, average commit time improved by 1.004% versus the expected 8% +/- 5%, while total block time improved by 1.846%. The `calculate_node_hashes` span improved by 5.174% in exclusive wall time and its recursive call count collapsed from 83,094 to 100, which supports the implementation mechanism. Per-block commit movement was mixed, ranging from a 6.696% gain on `9407bf...` to a 2.806% regression on `a2ebb2...`, so this should ship only with the caveat that the macro commit-time gain is modest.",
+  "per_invocation": [
+    {
+      "invocation_id": "hot-finalize-blocks",
+      "label": "hot finalize blocks",
+      "baseline_run_id": 9,
+      "candidate_run_id": 12,
+      "measured_pct": 1.004,
+      "matches_expected_signal": false,
+      "observations": [
+        "Run envelopes were clean: baseline run 9 and candidate run 12 both succeeded, were not interrupted, processed 50 measured blocks and 210 transactions, and matched the run-id maps.",
+        "Catalog block timing comparison showed commit_us_per_block moving from 108833.94us to 107741.78us, a 1.004% improvement; this is positive but below the expected 8% +/- 5% commit-time window.",
+        "The run-level block_total_us comparison improved by 1.846%, from 63077316us to 61913162us.",
+        "`calculate_node_hashes` moved in the expected direction on exclusive wall time: 1927177us baseline to 1827456us candidate, a 5.174% improvement. Calls dropped from 83094 to 100 after replacing recursive hashing with the explicit post-order pass.",
+        "`calculate_node_hashes` inclusive wall time dropped by 66.967%, but that figure is not directly comparable because the implementation intentionally removes recursive nested span accounting; exclusive wall time is the better mechanism metric.",
+        "`get_block_hash` also improved slightly, from 138910us to 134065us self wall, a 3.488% improvement, with calls increasing from 36980 to 37401.",
+        "Grouped by replayed block hash, commit time improved 6.696% for 9407bf..., 1.430% for 06f198..., 0.458% for 615df0..., and 0.164% for 35c1c0..., but regressed 2.806% for a2ebb2....",
+        "Top span-delta inspection did not show a new MARF-side regression absorbing the expected gain; the largest non-target movements were small broad Clarity/SQLite timing shifts consistent with replay variance."
+      ]
+    }
+  ],
+  "db_queries": [
+    {
+      "purpose": "Envelope sanity comparison for baseline run 9 and candidate run 12.",
+      "query_digest": "0f04dc09410fb42f650793e293b4b69d4e1f853e13bece5b7ce8f955b4c9c513",
+      "rows_returned": 5,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/0f04dc09410fb42f650793e293b4b69d4e1f853e13bece5b7ce8f955b4c9c513.csv"
+    },
+    {
+      "purpose": "Paired span comparison for calculate_node_hashes, the analyzer's primary suspected mechanism span.",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 1,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-calculate_node_hashes.csv"
+    },
+    {
+      "purpose": "Paired span comparison for get_block_hash, the analyzer's secondary suspected span.",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 1,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-get_block_hash.csv"
+    },
+    {
+      "purpose": "Paired block timing comparison for the commit_time expected signal.",
+      "query_digest": "9e906e8b79e87478de12d542c5eaa714b124204121971142ce164e0f817b5c7c",
+      "rows_returned": 6,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/9e906e8b79e87478de12d542c5eaa714b124204121971142ce164e0f817b5c7c.csv"
+    },
+    {
+      "purpose": "Per-block paired timing dump to inspect variance and outliers behind the small aggregate commit gain.",
+      "query_digest": "f8ff62a8244b70790acdcbba3db4ef5ea9adb5f1dd0ca6d1976941087637fc9e",
+      "rows_returned": 50,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/f8ff62a8244b70790acdcbba3db4ef5ea9adb5f1dd0ca6d1976941087637fc9e.csv"
+    },
+    {
+      "purpose": "Top span movement comparison to check whether sibling spans absorbed the expected commit-time gain.",
+      "query_digest": "7b8fe52fe3c76ff3f2f431ac73d1fc0f33fa6485f5d0114538d97b33251407dc",
+      "rows_returned": 40,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/7b8fe52fe3c76ff3f2f431ac73d1fc0f33fa6485f5d0114538d97b33251407dc.csv"
+    },
+    {
+      "purpose": "Grouped timing summary by replayed block hash to compare representative block shape.",
+      "query_digest": "3e58e8cfbfbab50cd6c20447fa3618b0914dc1d7fef5a69cc2ea66de83253ca6",
+      "rows_returned": 5,
+      "output_path": "analyze/marf-deferred-seal-postorder-hash-cache/queries/3e58e8cfbfbab50cd6c20447fa3618b0914dc1d7fef5a69cc2ea66de83253ca6.csv"
+    }
+  ],
+  "caveats": [
+    "The accepted mechanism signal is stronger than the macro commit-time signal: `calculate_node_hashes` exclusive wall improved 5.174%, but commit time improved only 1.004%.",
+    "`calculate_node_hashes` inclusive wall and call-count deltas are structurally affected by the recursive-to-iterative refactor, so exclusive wall is the fair span metric.",
+    "Commit-time movement is uneven across the five replayed block hashes, including a 2.806% regression on `a2ebb2...`."
+  ]
+}

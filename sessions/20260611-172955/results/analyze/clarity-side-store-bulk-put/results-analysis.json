@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "clarity-side-store-bulk-put",
+  "axis": "tx_latency",
+  "verdict": "accepted",
+  "confidence": "high",
+  "headline_improvement_pct": 4.184,
+  "headline_rationale": "The write-heavy replay improved tx execution latency by 4.18%, within the expected 5% +/- 4% band, and the SQLite side-store write spans moved in the predicted direction.",
+  "per_invocation": [
+    {
+      "invocation_id": "write-heavy-txs",
+      "label": "write-heavy txs",
+      "baseline_run_id": 7,
+      "candidate_run_id": 10,
+      "measured_pct": 4.184,
+      "matches_expected_signal": true,
+      "observations": [
+        "Both bench-run envelopes succeeded, were not interrupted, and matched the recorded run ids: baseline 7 and candidate 10.",
+        "DB block timing shows execution_us_per_block improved from 1323303.175 us to 1267941.063 us, a 4.184% tx-latency improvement; total_us_per_block improved 3.544%.",
+        "All four replayed tx hashes improved on stacks_tx_stats.duration_us averages: 37ad67a3 +4.842%, 408f81be +5.184%, 92639041 +3.286%, and 9f0416be +3.507%.",
+        "The exact old SqliteConnection::put span is absent in the candidate, while the replacement SqliteConnection::put_many span accounts for 2940091 us across 240 batch calls versus baseline put at 3139064 us across 118300 per-item calls.",
+        "PersistentWritableMarfStore::put_all_data total wall improved from 5109628 us to 4756109 us, a 6.919% reduction with the same 240 parent calls."
+      ]
+    }
+  ],
+  "pr_body_summary": "The write-heavy transaction replay moved in the expected direction: tx execution latency improved by 4.18%, within the analyzer's 5% +/- 4% expectation, and total block time improved by 3.54%. The profiler evidence matches the proposed mechanism: the old per-item `SqliteConnection::put` calls disappeared, the new `put_many` batch path handled the side-store writes, and `PersistentWritableMarfStore::put_all_data` total wall time fell by 6.92%. All four replayed tx hashes improved on average duration, with per-sample gains between 3.29% and 5.18%. Commit timing regressed by 3.62% per block, so the total-block improvement is smaller than the execution-latency gain, but it does not contradict the tx-latency mechanism.",
+  "caveats": [
+    "Commit_us_per_block regressed by 3.619%, partially offsetting the execution gain at the whole-block level; total_us_per_block still improved by 3.544%.",
+    "SqliteConnection::put_many remains a top candidate span at 2940091 us self wall, so batching reduced dispatch/prepare overhead but did not eliminate SQLite write cost."
+  ],
+  "db_queries": [
+    {
+      "purpose": "compare_run_summary envelope sanity",
+      "query_digest": "0f04dc09410fb42f650793e293b4b69d4e1f853e13bece5b7ce8f955b4c9c513",
+      "rows_returned": 5,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/0f04dc09410fb42f650793e293b4b69d4e1f853e13bece5b7ce8f955b4c9c513-e42255c1d3ce.csv"
+    },
+    {
+      "purpose": "compare_block_timing tx latency context",
+      "query_digest": "9e906e8b79e87478de12d542c5eaa714b124204121971142ce164e0f817b5c7c",
+      "rows_returned": 6,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/9e906e8b79e87478de12d542c5eaa714b124204121971142ce164e0f817b5c7c-e42255c1d3ce.csv"
+    },
+    {
+      "purpose": "compare span put mechanism movement",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 1,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-0990b192238d.csv"
+    },
+    {
+      "purpose": "compare span put_all_data parent movement",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 1,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-277ef1175b32.csv"
+    },
+    {
+      "purpose": "compare span SqliteConnection::put mechanism movement",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 0,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-444a5cfe565a.csv"
+    },
+    {
+      "purpose": "compare span PersistentWritableMarfStore::put_all_data movement",
+      "query_digest": "5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c",
+      "rows_returned": 0,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/5db9e3dab0e264ccc41ab213eeef0da16bfb2d9eb3f6ff191330f3a3d36d021c-af612d0f59d6.csv"
+    },
+    {
+      "purpose": "side-store put span family including new put_many",
+      "query_digest": "a470fa23e65342fee2596ff394120d4a6a47bb1bafdaf54478cc875f4fe4131e",
+      "rows_returned": 10,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/a470fa23e65342fee2596ff394120d4a6a47bb1bafdaf54478cc875f4fe4131e-e42255c1d3ce.csv"
+    },
+    {
+      "purpose": "top candidate spans by self wall for compensation check",
+      "query_digest": "d2636460eb5fc4468d5bfa2f22ae9158e13ef260c23efeed798d56b8d557f523",
+      "rows_returned": 25,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/d2636460eb5fc4468d5bfa2f22ae9158e13ef260c23efeed798d56b8d557f523-e42255c1d3ce.csv"
+    },
+    {
+      "purpose": "per tx hash duration comparison for write-heavy samples",
+      "query_digest": "334175ed1b29b63080ba6780f8302c32c38458a7d1a2d39245f3333b90030b1c",
+      "rows_returned": 4,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/334175ed1b29b63080ba6780f8302c32c38458a7d1a2d39245f3333b90030b1c-e42255c1d3ce.csv"
+    },
+    {
+      "purpose": "put_all_data per-block distribution comparison",
+      "query_digest": "e13033fd9fbb090e322a2f5d1b40cf8689ac10012f797a77828e24d73262ce13",
+      "rows_returned": 2,
+      "output_path": "analyze/clarity-side-store-bulk-put/queries/e13033fd9fbb090e322a2f5d1b40cf8689ac10012f797a77828e24d73262ce13-e42255c1d3ce.csv"
+    }
+  ]
+}

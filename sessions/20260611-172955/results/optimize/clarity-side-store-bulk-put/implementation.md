@@ -1,0 +1,41 @@
+# Implementation report — `clarity-side-store-bulk-put`
+
+_Coordinator-rendered companion view of `optimizer-report.json`. The JSON is authoritative; this file regenerates from it on every commit/demote pass._
+
+- **Target**: `clarity-side-store-bulk-put`
+- **Delivery mode**: `NormalPr`
+- **PR title**: perf: batch sqlite side-store REPLACEs
+
+```json
+{
+  "schema_version": 2,
+  "session_id": "20260611-172955",
+  "target_id": "clarity-side-store-bulk-put",
+  "outcome": "implemented",
+  "delivery_mode": "normal_pr",
+  "implementation_summary": "Added SqliteConnection::put_many in clarity/src/vm/database/sqlite.rs so side-store data_table REPLACEs prepare once per batch, then used it from PersistentWritableMarfStore::put_all_data and the SQLite-backed memory stores while leaving MARFValue hashing and MARF::insert_batch behavior unchanged.",
+  "deviation_from_proposed_change": "Followed the proposed SQLite prepared-statement batching path; additionally updated the second SQLite-backed MemoryBackingStore implementation in stackslib/src/clarity_vm/database/mod.rs for parity with clarity/src/vm/database/sqlite.rs.",
+  "test_summary": {
+    "framework": "nextest",
+    "passed": 10499,
+    "failed": 0,
+    "duration_secs": 847.34,
+    "log_path": "nextest.log"
+  },
+  "clippy_clean": true,
+  "pr_title": "perf: batch sqlite side-store REPLACEs",
+  "parity": {
+    "consensus_sensitive": true,
+    "evidence": [
+      "PersistentWritableMarfStore::put_all_data still derives each side-store key from MARFValue::from_value(value).to_hex() and still calls MARF::insert_batch with the same Clarity keys and MARF values.",
+      "The new persistent MARF regression proves duplicate Clarity keys resolve to the newest value, each hash-keyed data_table row is present, and reads by trie path return the same value after commit.",
+      "The full nextest suite passed, including existing MARF, chainstate, Clarity VM, serialization, and cost tests."
+    ],
+    "tests": [
+      "stackslib::clarity_vm::database::marf::tests::persistent_put_all_data_writes_same_side_store_rows_and_marf_values",
+      "cargo nextest run --no-fail-fast --retries 2 --no-output-indent --failure-output final --success-output never --status-level slow --final-status-level flaky --hide-progress-bar --no-input-handler"
+    ],
+    "unproven_risk": null
+  }
+}
+```

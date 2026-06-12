@@ -1,0 +1,5 @@
+context,name,baseline_self_wall_us,candidate_self_wall_us,self_wall_delta_us,self_wall_improvement_pct,baseline_total_wall_us,candidate_total_wall_us,total_wall_delta_us,total_wall_improvement_pct,baseline_calls,candidate_calls,call_delta
+blockstack_lib::clarity_vm::database::marf::PersistentWritableMarfStore,get_data,322315,208255,-114060,35.388,54838051,34733377,-20104674,36.662,643620,438280,-205340
+clarity::vm::database::key_value_wrapper::RollbackWrapper,get_data,62532,53737,-8795,14.065,16365339,10509870,-5855469,35.78,172640,172640,0
+clarity::vm::database::clarity_db::ClarityDatabase,get_data,43260,40583,-2677,6.188,16408599,10550453,-5858146,35.702,172640,172640,0
+blockstack_lib::clarity_vm::database::marf::ReadOnlyMarfStore,get_data,516,495,-21,4.07,25460,22405,-3055,11.999,500,500,0

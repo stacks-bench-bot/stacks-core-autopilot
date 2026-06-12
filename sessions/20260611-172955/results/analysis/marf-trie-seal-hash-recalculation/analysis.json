@@ -1,0 +1,205 @@
+{
+  "schema_version": 4,
+  "family_id": "marf-trie-seal-hash-recalculation",
+  "status": "accepted",
+  "selection_lens": "commit_time",
+  "lens_disposition": {
+    "lens": "commit_time",
+    "status": "addressed",
+    "reason": "The promoted signal is real commit-bucket work: representative traces put deferred MARF seal hashing under Segment: Finalize (merkle+seal), and the handle is a concrete Rust function rather than a bucket wrapper."
+  },
+  "targets": [
+    {
+      "target_span": "calculate_node_hashes",
+      "bucket": "block_commit",
+      "fix_signature": "marf-deferred-seal-postorder-hash-cache",
+      "hotspot": {
+        "span": "calculate_node_hashes",
+        "self_wall_us": 381328360,
+        "total_wall_us": 1272836450,
+        "calls": 2132356,
+        "location": "stackslib/src/chainstate/stacks/index/storage.rs:818"
+      },
+      "files": [
+        "stackslib/src/chainstate/stacks/index/storage.rs",
+        "stackslib/src/chainstate/stacks/index/node.rs",
+        "stackslib/src/chainstate/stacks/index/cache.rs",
+        "stackslib/src/chainstate/stacks/index/test/storage.rs",
+        "stackslib/src/chainstate/stacks/index/test/marf.rs"
+      ],
+      "evidence": "Run 6 ranks TrieRAM::calculate_node_hashes as the #2 exclusive span: 381.328s self wall, 1,272.836s inclusive wall, 2,132,356 calls, 100% block recurrence, and no transaction association. The per-block distribution is broad rather than a single spike: 15,000/15,000 blocks, p50 18.794ms, p95 58.877ms, p99 118.061ms, top3 share 2.6%. All five representatives are the top five blocks for this span. In each trace, calculate_node_hashes sits under Segment: Finalize (merkle+seal) and dominates the finalize subtree: 5,032.9ms of 5,053.2ms for 0x06f198..., 3,476.5ms of 3,518.2ms for 0x35c1c0..., 2,664.3ms of 2,688.4ms for 0x9407bf..., 1,524.2ms of 1,549.2ms for 0x615df0..., and 1,324.1ms of 1,344.3ms for 0xa2ebb2.... The suspected inner_get_trie_ancestor_hashes_bytes path is present but much smaller in these traces, topping out at 38.736ms, so it is not the primary handle. Code in TrieRAM::inner_seal_marf calls calculate_node_hashes only in Deferred/All mode; calculate_node_hashes clones each node with get_nodetype(...).to_owned(), serializes node consensus bytes, scans ptrs, recursively hashes same-block children, looks up ancestor block hashes via the existing get_block_hash_caching cache, and writes deferred hashes back. Existing code already caches block-id to block-hash lookups, so the actionable work is reducing the deferred seal walk's clone/recursion/pointer traversal overhead while preserving the identical hash byte stream.",
+      "proposed_change": "Refactor TrieRAM::calculate_node_hashes into a deferred seal hasher that computes the same post-order hashes with an explicit work stack or per-node memo indexed by TrieRAM slot. While a node is borrowed, serialize the node consensus prefix and collect the minimal child descriptors needed for hashing, then drop the borrow before walking children; store computed hashes in a parallel Vec<Option<TrieHash>> or equivalent and write them back to TrieRAM once computed. This avoids cloning full TrieNodeType values and repeatedly scanning large pointer arrays during recursive seal, while preserving get_block_hash_caching for backptrs, write_node_hash semantics for Deferred mode, and the All-mode equality assertion against eager hashing.",
+      "expected_improvement": {
+        "tx_latency": 0.0,
+        "tenure_throughput": 0.0,
+        "commit_time": 8.0
+      },
+      "risk": "medium",
+      "verification_plan": "Use existing MARF storage tests that compare deferred/immediate/all hash modes and merkle verification, especially stackslib/src/chainstate/stacks/index/test/storage.rs and stackslib/src/chainstate/stacks/index/test/marf.rs. Add focused tests for root hash equality across Immediate, Deferred, and All modes over Node4/16/48/256 backptr-heavy tries. Then run the targeted replay below and compare calculate_node_hashes plus block commit/finalize timing; no Clarity cost movement is expected.",
+      "consensus_breaking": false,
+      "evidence_queries": [
+        {
+          "purpose": "Rank run-level hotspot and capture self/inclusive wall time for the target span.",
+          "sql_path": "queries/top_spans_by_self_wall.sql",
+          "params": {
+            "run_id": "6",
+            "limit": "80"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/top-spans-self-wall.csv",
+          "key_observation": "calculate_node_hashes: 381328.36ms self wall, 1272836.45ms inclusive wall, 2132356 calls, avg self 178.83us/call.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Confirm the span is block-level commit work recurring across the whole sampled workload.",
+          "sql_path": "queries/span_recurrence.sql",
+          "params": {
+            "run_id": "6"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/span-recurrence.csv",
+          "key_observation": "calculate_node_hashes appears in 15000/15000 blocks (100.0%) and 0 transactions.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Show the signal is broad and not top-block dominated.",
+          "sql_path": "queries/span_per_block_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "84"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/calculate-node-hashes-block-distribution.csv",
+          "key_observation": "15000 blocks, p50 18.794ms, p95 58.877ms, p99 118.061ms, top3 share 2.6%.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Identify stable replay block hashes for the hottest representatives.",
+          "sql_path": "queries/top_blocks_for_span.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "84",
+            "limit": "20"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/calculate-node-hashes-top-blocks.csv",
+          "key_observation": "The five candidate representatives are the top five blocks for calculate_node_hashes, with self wall 4457.745ms, 3104.324ms, 2386.753ms, 1358.211ms, and 1169.588ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the hottest representative and verify calculate_node_hashes dominates finalize rather than an anchor.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_block_hash": "0x06f1987a4a34a5f1ab301b9291700ffd6edfd9b555b357c30446c62621a8b547",
+            "min_wall_ms": "2",
+            "max_rows": "1200"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-06f198.csv",
+          "key_observation": "Segment: Finalize wall 5053.211ms; descendant calculate_node_hashes wall 5032.916ms; inner_get_trie_ancestor_hashes_bytes wall 17.820ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the second representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_block_hash": "0x35c1c0ee7fe2def3b6f3f8cebd733439ae71950d267185888467b629e4fd0bdb",
+            "min_wall_ms": "2",
+            "max_rows": "1200"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-35c1c0.csv",
+          "key_observation": "Segment: Finalize wall 3518.175ms; descendant calculate_node_hashes wall 3476.476ms; inner_get_trie_ancestor_hashes_bytes wall 38.736ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the third representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_block_hash": "0x9407bf9e1bbe701776f97ffcdf9f2d36f5f786d03b78c61d0af832a9d556e722",
+            "min_wall_ms": "2",
+            "max_rows": "1200"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-9407bf.csv",
+          "key_observation": "Segment: Finalize wall 2688.394ms; descendant calculate_node_hashes wall 2664.332ms; inner_get_trie_ancestor_hashes_bytes wall 20.975ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the fourth representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_block_hash": "0x615df05829a3d8184b3001020c2b9a969277d9a40c8556c167d150a2554e942c",
+            "min_wall_ms": "2",
+            "max_rows": "1200"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-615df0.csv",
+          "key_observation": "Segment: Finalize wall 1549.222ms; descendant calculate_node_hashes wall 1524.160ms; inner_get_trie_ancestor_hashes_bytes wall 23.543ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        },
+        {
+          "purpose": "Trace the fifth representative and confirm the same finalize/seal shape.",
+          "sql_path": "queries/profiler_trace_block.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_block_hash": "0xa2ebb236804dcf78a43de7db54afea63c0ee145adde25b50c02e1c658fd08b7a",
+            "min_wall_ms": "2",
+            "max_rows": "1200"
+          },
+          "output_path": "analysis/marf-trie-seal-hash-recalculation/queries/trace-block-a2ebb2.csv",
+          "key_observation": "Segment: Finalize wall 1344.289ms; descendant calculate_node_hashes wall 1324.119ms; inner_get_trie_ancestor_hashes_bytes wall 17.302ms.",
+          "supports_invocations": [
+            "hot-finalize-blocks"
+          ]
+        }
+      ],
+      "verification_replay": {
+        "rationale": "Replay the five hottest finalize blocks to isolate deferred MARF seal hashing while keeping profiler detail for span-level verification.",
+        "invocations": [
+          {
+            "id": "hot-finalize-blocks",
+            "label": "hot finalize blocks",
+            "purpose": "Measure whether the deferred seal hasher reduces commit/finalize time on blocks where calculate_node_hashes dominates.",
+            "samples": {
+              "kind": "blocks",
+              "blocks": [
+                "0x06f1987a4a34a5f1ab301b9291700ffd6edfd9b555b357c30446c62621a8b547",
+                "0x35c1c0ee7fe2def3b6f3f8cebd733439ae71950d267185888467b629e4fd0bdb",
+                "0x9407bf9e1bbe701776f97ffcdf9f2d36f5f786d03b78c61d0af832a9d556e722",
+                "0x615df05829a3d8184b3001020c2b9a969277d9a40c8556c167d150a2554e942c",
+                "0xa2ebb236804dcf78a43de7db54afea63c0ee145adde25b50c02e1c658fd08b7a"
+              ]
+            },
+            "warmup": 0,
+            "repetitions": 10,
+            "profiler": "rich",
+            "expected_signal": {
+              "axis": "commit_time",
+              "direction": "improves",
+              "estimate_pct": 8.0,
+              "tolerance_pct": 5.0
+            }
+          }
+        ],
+        "suspected_spans": [
+          "calculate_node_hashes",
+          "get_block_hash"
+        ]
+      }
+    }
+  ],
+  "global_materiality_note": "This is block-boundary MARF seal work observed in every sampled block, not a contract-specific behavior. A successful non-consensus rewrite should improve commit/finalize time across deferred-hashing MARF workloads, with no expected tx-latency or Clarity tenure-throughput effect."
+}

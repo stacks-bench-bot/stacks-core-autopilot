@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "url": "https://github.com/stacks-bench-bot/stacks-core.git",
+  "branch": "feat/stacks-bench",
+  "sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "fetched_at": "2026-06-11T17:30:51Z",
+  "cache_id": "stacks-core-bot"
+}

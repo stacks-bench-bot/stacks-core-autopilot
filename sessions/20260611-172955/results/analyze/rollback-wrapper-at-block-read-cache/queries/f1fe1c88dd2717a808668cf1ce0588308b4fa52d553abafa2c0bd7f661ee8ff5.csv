@@ -1,0 +1,2 @@
+issuer,contract,function,call_count,sum_runtime,pct_run_runtime,sum_read_count,pct_run_read_count,sum_read_length,pct_run_read_length,sum_write_count,pct_run_write_count,sum_write_length,pct_run_write_length,max_block_runtime,max_block_read_count,max_block_read_length,max_block_write_count,max_block_write_length,max_axis_share_pct
+SP1HFCRKEJ8BYW4D0E3FAWHFDX8A25PPAA83HWWZ9,dual-stacking-v2_1_0,capture-snapshot-balances-optimizer,100,14536812300,100.0,554580,100.0,1016985280,100.0,9700,100.0,1037000,100.0,154589779,5599,10524808,97,10370,100.0

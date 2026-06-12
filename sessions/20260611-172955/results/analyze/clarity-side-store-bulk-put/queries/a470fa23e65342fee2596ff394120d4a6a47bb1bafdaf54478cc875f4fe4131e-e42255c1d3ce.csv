@@ -1,0 +1,11 @@
+side,context,name,self_wall_us,total_wall_us,calls,avg_self_us_per_call
+baseline,clarity::vm::database::sqlite::SqliteConnection,put,3139064,3139064,118300,26.535
+baseline,clarity::vm::database::clarity_db::ClarityDatabase,put_value_with_size,214667,1074291,70060,3.064
+baseline,blockstack_lib::clarity_vm::database::marf::PersistentWritableMarfStore,put_all_data,76548,5109628,240,318.95
+baseline,clarity::vm::database::clarity_db::ClarityDatabase,put_data,17325,17325,48240,0.359
+baseline,clarity::vm::database::clarity_db::ClarityDatabase,put_value,5385,38205,24080,0.224
+candidate,clarity::vm::database::sqlite::SqliteConnection,put_many,2940091,2940091,240,12250.379
+candidate,clarity::vm::database::clarity_db::ClarityDatabase,put_value_with_size,197896,1035458,70060,2.825
+candidate,blockstack_lib::clarity_vm::database::marf::PersistentWritableMarfStore,put_all_data,54247,4756109,240,226.029
+candidate,clarity::vm::database::clarity_db::ClarityDatabase,put_data,15886,15886,48240,0.329
+candidate,clarity::vm::database::clarity_db::ClarityDatabase,put_value,5271,35319,24080,0.219

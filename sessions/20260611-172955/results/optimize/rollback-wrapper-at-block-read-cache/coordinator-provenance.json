@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "rollback-wrapper-at-block-read-cache",
+  "delivery_mode": "normal_pr",
+  "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "head_sha": "fdfafc482a765472e4b2f7da1611c65eb67fe2c3",
+  "commit_message": "perf: optimize rollback-wrapper-at-block-read-cache"
+}

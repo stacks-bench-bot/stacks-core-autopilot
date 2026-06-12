@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "clarity-side-store-bulk-put",
+  "delivery_mode": "normal_pr",
+  "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "head_sha": "ae1afdbb92f99d9748c1c8a29898a666c494b47f",
+  "commit_message": "perf: optimize clarity-side-store-bulk-put"
+}

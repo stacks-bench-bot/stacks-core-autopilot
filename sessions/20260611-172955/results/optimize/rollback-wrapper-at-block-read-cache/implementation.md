@@ -1,0 +1,44 @@
+# Implementation report — `rollback-wrapper-at-block-read-cache`
+
+_Coordinator-rendered companion view of `optimizer-report.json`. The JSON is authoritative; this file regenerates from it on every commit/demote pass._
+
+- **Target**: `rollback-wrapper-at-block-read-cache`
+- **Delivery mode**: `NormalPr`
+- **PR title**: perf: cache rollback at-block store reads
+
+```json
+{
+  "schema_version": 2,
+  "session_id": "20260611-172955",
+  "target_id": "rollback-wrapper-at-block-read-cache",
+  "outcome": "implemented",
+  "delivery_mode": "normal_pr",
+  "implementation_summary": "Added a RollbackWrapper read-through cache for materialized backing-store get_data/get_value reads and ordinary metadata reads while query_pending_data is false, keyed by active Stacks block hash, to avoid repeated historical MARF reads under at-block evaluation. Cached raw store results still flow through the existing deserialization paths, proof reads are uncached, pending rollback data remains authoritative when visible, and caches are cleared on bottom commits.",
+  "deviation_from_proposed_change": "Cached ordinary metadata reads but left get_metadata_manual uncached because it is keyed by an explicit height rather than the active block hash and was not part of the profiled get_data/get_value hotspot.",
+  "test_summary": {
+    "framework": "nextest",
+    "passed": 10502,
+    "failed": 0,
+    "duration_secs": 963.6,
+    "log_path": "nextest.log"
+  },
+  "clippy_clean": true,
+  "pr_title": "perf: cache rollback at-block store reads",
+  "parity": {
+    "consensus_sensitive": true,
+    "evidence": [
+      "Cached values are raw Option<String> backing-store results, so get_data/get_value still use the existing Clarity deserialization and byte-length paths.",
+      "Focused RollbackWrapper tests show pending writes remain visible only when query_pending_data is true, materialized reads are isolated by active block hash, and metadata cache entries are isolated by active block hash.",
+      "Full nextest suite passed with 10502 tests."
+    ],
+    "tests": [
+      "clarity::vm::database::key_value_wrapper::tests::materialized_reads_are_cached_by_block_hash",
+      "clarity::vm::database::key_value_wrapper::tests::materialized_read_cache_ignores_surrounding_pending_writes",
+      "clarity::vm::database::key_value_wrapper::tests::materialized_cache_is_used_by_value_reads",
+      "clarity::vm::database::key_value_wrapper::tests::materialized_metadata_reads_are_cached_by_block_hash",
+      "cargo nextest run --no-fail-fast --retries 2"
+    ],
+    "unproven_risk": null
+  }
+}
+```

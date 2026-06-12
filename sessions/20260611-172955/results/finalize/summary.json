@@ -1,0 +1,92 @@
+{
+  "schema_version": 4,
+  "session_id": "20260611-172955",
+  "baseline_run_id": 6,
+  "baseline_rerun_id": 6,
+  "noise_floor_pct": 1.0,
+  "experiments": [
+    {
+      "target_id": "clarity-side-store-bulk-put",
+      "delivery_mode": "normal_pr",
+      "status": "accepted",
+      "run_ids": [
+        10
+      ],
+      "baseline_run_ids": [
+        7
+      ],
+      "improvement_pct": 4.184,
+      "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+      "head_sha": "ae1afdbb92f99d9748c1c8a29898a666c494b47f"
+    },
+    {
+      "target_id": "rollback-wrapper-at-block-read-cache",
+      "delivery_mode": "normal_pr",
+      "status": "accepted",
+      "run_ids": [
+        11
+      ],
+      "baseline_run_ids": [
+        8
+      ],
+      "improvement_pct": 27.22,
+      "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+      "head_sha": "fdfafc482a765472e4b2f7da1611c65eb67fe2c3"
+    },
+    {
+      "target_id": "marf-deferred-seal-postorder-hash-cache",
+      "delivery_mode": "normal_pr",
+      "status": "accepted",
+      "run_ids": [
+        12
+      ],
+      "baseline_run_ids": [
+        9
+      ],
+      "improvement_pct": 1.004,
+      "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+      "head_sha": "58df008290aaf1c90b13ad768eb5f067cb944b0a",
+      "reason": "mixed: The accepted mechanism signal is stronger than the macro commit-time signal: `calculate_node_hashes` exclusive wall improved 5.174%, but commit time improved only 1.004%.; `calculate_node_hashes` inclusive wall and call-count deltas are structurally affected by the recursive-to-iterative refactor, so exclusive wall is the fair span metric.; Commit-time movement is uneven across the five replayed block hashes, including a 2.806% regression on `a2ebb2...`."
+    }
+  ],
+  "outcome_counts": {
+    "normal_pr": {
+      "accepted": 3,
+      "rejected": 0,
+      "aborted": 0
+    },
+    "consensus_poc_pr": {
+      "poc_landed": 0,
+      "aborted": 0
+    },
+    "consensus_issue": {
+      "routed_to_issue": 0,
+      "aborted": 0
+    }
+  },
+  "lens_dispositions": [
+    {
+      "family_id": "dlmm-add-liquidity-multi-throughput",
+      "lens": "tenure_throughput",
+      "status": "not_actionable",
+      "reason": "The throughput signal is real: add-liquidity-multi accounts for 29.86% of run runtime, 35.68% read_count, 37.92% read_length, 45.44% write_count, and 44.09% write_length, with write_count the promoted near-binding axis. Code and traces show this comes from the contract's 150-iteration fold over nested dlmm-core add-liquidity calls and their consensus-visible map/var writes. The actionable node-side storage handle below reduces wall time in SQLite side-store writes, but it does not reduce deterministic Clarity write_count/read_length/write_length without a contract change or HIP-class cost/VM behavior change."
+    },
+    {
+      "family_id": "dual-stacking-snapshot-balance-fanout",
+      "lens": "tx_latency",
+      "status": "addressed",
+      "reason": "Representative tx traces show the promoted latency is real and dominated by repeated at-block historical reads; a transaction-local materialized-read cache can reduce repeated PersistentWritableMarfStore::get_data calls and their MARF walk descendants without changing consensus-visible Clarity behavior."
+    },
+    {
+      "family_id": "marf-trie-seal-hash-recalculation",
+      "lens": "commit_time",
+      "status": "addressed",
+      "reason": "The promoted signal is real commit-bucket work: representative traces put deferred MARF seal hashing under Segment: Finalize (merkle+seal), and the handle is a concrete Rust function rather than a bucket wrapper."
+    }
+  ],
+  "next_targets_hint": "3 PR(s) + 0 PoC PR(s) + 0 issue(s) of 3 target(s); review and re-run rejected/aborted with refined analyses",
+  "source_url": "https://github.com/stacks-bench-bot/stacks-core.git",
+  "source_branch": "feat/stacks-bench",
+  "source_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "source_fetched_at": "2026-06-11T17:30:51Z"
+}

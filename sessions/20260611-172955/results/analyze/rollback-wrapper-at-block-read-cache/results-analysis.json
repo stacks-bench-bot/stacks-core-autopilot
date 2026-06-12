@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "rollback-wrapper-at-block-read-cache",
+  "axis": "tx_latency",
+  "verdict": "accepted",
+  "confidence": "medium",
+  "headline_improvement_pct": 27.22,
+  "headline_rationale": "The representative-heavy replay improved exact target transaction latency by 27.22%, with matching reductions in at-block and backing MARF read spans.",
+  "per_invocation": [
+    {
+      "invocation_id": "representative-heavy",
+      "label": "representative heavy txs",
+      "baseline_run_id": 8,
+      "candidate_run_id": 11,
+      "measured_pct": 27.22,
+      "matches_expected_signal": true,
+      "observations": [
+        "Both bench envelopes succeeded without interruption and matched the run-id maps: baseline run 8, candidate run 11, 100 measured blocks/transactions each.",
+        "Exact DB replay tx comparison over the five requested txids and 20 repetitions each improved average duration from 1,263,375.9 us to 919,480.78 us, a 27.22% improvement; each individual txid improved between 24.294% and 30.595%.",
+        "Block execution time moved in the same direction, improving 27.22% per block; total block time improved 26.843%.",
+        "The suspected mechanism moved directly: at-block total wall improved 28.815%, ExecutionState::evaluate_at_block improved 28.82%, PersistentWritableMarfStore::get_data total wall improved 36.662%, MARF get_by_key/get_path/walk improved about 37.5%, and Trie::walk_backptr improved 37.171%.",
+        "Backend MARF call counts dropped while Clarity/RollbackWrapper get_data/get_value call counts stayed flat, consistent with a read-through cache avoiding repeated materialized backing-store reads without changing Clarity-level reads.",
+        "All deterministic Clarity cost deltas for the target tx set were zero, so the result is a wall-time latency gain rather than a tenure-budget change."
+      ]
+    }
+  ],
+  "pr_body_summary": "The representative-heavy replay accepted the hypothesis: exact target transaction latency improved 27.22% across the five requested txids and 20 repetitions each. The profile moved in the expected place: at-block/evaluate_at_block total wall fell about 28.8%, PersistentWritableMarfStore::get_data fell 36.7%, and the MARF walk path fell about 37%. Clarity-level cost counters were unchanged, so this is a wall-time latency improvement rather than a consensus budget change. The measured gain is materially larger than the analyzer's 6% estimate, likely because the implementation also reduced ordinary metadata backing reads in this workload.",
+  "caveats": [
+    "The measured 27.22% tx-latency gain is well above the expected 6% +/- 4% estimate; the direction and mechanism match, but confidence is medium because the magnitude estimate was not close.",
+    "This replay is intentionally concentrated on five heavy dual-stacking snapshot txids, so the headline should be read as representative-heavy replay latency, not broad network-average throughput.",
+    "The optimizer also cached ordinary metadata reads, and metadata backing-store spans dropped materially; get_metadata_manual remained uncached as reported by the optimizer."
+  ],
+  "db_queries": [
+    {
+      "purpose": "Envelope sanity for representative-heavy baseline run 8 vs candidate run 11",
+      "query_digest": "70be8f204d8ef126069a4e69fb769884730aeeb954341b00b71842861b775eb5",
+      "rows_returned": 5,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/70be8f204d8ef126069a4e69fb769884730aeeb954341b00b71842861b775eb5.csv"
+    },
+    {
+      "purpose": "Block timing comparison for representative-heavy baseline run 8 vs candidate run 11",
+      "query_digest": "2f8b9ecde371bd57a20110ef7ebc441d36bea31e28c27f6fc0eeaa08911c4035",
+      "rows_returned": 6,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/2f8b9ecde371bd57a20110ef7ebc441d36bea31e28c27f6fc0eeaa08911c4035.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for get_data between baseline run 8 and candidate run 11",
+      "query_digest": "fdfc74f2b83d52455711ac6b8203767e817ca353415310df2777efd31c780522",
+      "rows_returned": 4,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/fdfc74f2b83d52455711ac6b8203767e817ca353415310df2777efd31c780522.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for get_value between baseline run 8 and candidate run 11",
+      "query_digest": "77e36367c5f66f9712d1e380aa54a0fdc02ede9744d2459f59732ebf16c95584",
+      "rows_returned": 2,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/77e36367c5f66f9712d1e380aa54a0fdc02ede9744d2459f59732ebf16c95584.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for get_by_key between baseline run 8 and candidate run 11",
+      "query_digest": "48dbf2aa49d06539149ace1d9a7661a65feae1fa84690d9ac54e286b6bbb9c66",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/48dbf2aa49d06539149ace1d9a7661a65feae1fa84690d9ac54e286b6bbb9c66.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for get_path between baseline run 8 and candidate run 11",
+      "query_digest": "15b41de8ddba6efceca6a59d808f93ab4a216b315e507e249d7380dde1e826b1",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/15b41de8ddba6efceca6a59d808f93ab4a216b315e507e249d7380dde1e826b1.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for walk between baseline run 8 and candidate run 11",
+      "query_digest": "4e02f95a3b512c59f0216c38eefcab691b744c4ff6cff9a81614286ba151942f",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/4e02f95a3b512c59f0216c38eefcab691b744c4ff6cff9a81614286ba151942f.csv"
+    },
+    {
+      "purpose": "Suspected span comparison for walk_backptr between baseline run 8 and candidate run 11",
+      "query_digest": "731de1b8675c245c12b201a68c3120e51ab2dddc58915bb799363c0f7f71b5ac",
+      "rows_returned": 2,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/731de1b8675c245c12b201a68c3120e51ab2dddc58915bb799363c0f7f71b5ac.csv"
+    },
+    {
+      "purpose": "Baseline top contract-call wall-time ranking for dual-stacking replay",
+      "query_digest": "5ccd5058aaf110465637b8c740893608e42547473aaa2af4839c1a91f032f069",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/5ccd5058aaf110465637b8c740893608e42547473aaa2af4839c1a91f032f069.csv"
+    },
+    {
+      "purpose": "Baseline top Clarity-cost ranking for dual-stacking replay",
+      "query_digest": "aeb0d263e268692a00f782d67e0cbe15d637c6f0d38245f3b9240636ce1ff8d4",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/aeb0d263e268692a00f782d67e0cbe15d637c6f0d38245f3b9240636ce1ff8d4.csv"
+    },
+    {
+      "purpose": "Baseline transaction list for dual-stacking capture-snapshot-balances-optimizer",
+      "query_digest": "c10c09eb9723a9e4dd63b9d1662786b0d13c5ecc02867801a9af417af3aaccc4",
+      "rows_returned": 100,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/c10c09eb9723a9e4dd63b9d1662786b0d13c5ecc02867801a9af417af3aaccc4.csv"
+    },
+    {
+      "purpose": "Candidate top contract-call wall-time ranking for dual-stacking replay",
+      "query_digest": "6ea7636c5cb2fa3320f5d344f931b8b581234f66341eb6da1838c9f2319ce36d",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/6ea7636c5cb2fa3320f5d344f931b8b581234f66341eb6da1838c9f2319ce36d.csv"
+    },
+    {
+      "purpose": "Candidate top Clarity-cost ranking for dual-stacking replay",
+      "query_digest": "f1fe1c88dd2717a808668cf1ce0588308b4fa52d553abafa2c0bd7f661ee8ff5",
+      "rows_returned": 1,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/f1fe1c88dd2717a808668cf1ce0588308b4fa52d553abafa2c0bd7f661ee8ff5.csv"
+    },
+    {
+      "purpose": "Candidate transaction list for dual-stacking capture-snapshot-balances-optimizer",
+      "query_digest": "ff04c7cf066e8061125cc2aeb1572fc229ea534c070df0cdca2af8a8231e0c89",
+      "rows_returned": 100,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/ff04c7cf066e8061125cc2aeb1572fc229ea534c070df0cdca2af8a8231e0c89.csv"
+    },
+    {
+      "purpose": "Exact replay tx latency comparison for the five representative txids",
+      "query_digest": "2815b269592e2548e6026871d8a274a85108c488e14df209ef50bb9137271742",
+      "rows_returned": 6,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/2815b269592e2548e6026871d8a274a85108c488e14df209ef50bb9137271742.csv"
+    },
+    {
+      "purpose": "Trace-level mechanism summary for target txids across at-block and suspected storage spans",
+      "query_digest": "99ced0f4ff30b6b9c53dd6222d76201a97b0b2fe2bf66cafd9636f87c4c07ba3",
+      "rows_returned": 15,
+      "output_path": "analyze/rollback-wrapper-at-block-read-cache/queries/99ced0f4ff30b6b9c53dd6222d76201a97b0b2fe2bf66cafd9636f87c4c07ba3.csv"
+    }
+  ]
+}

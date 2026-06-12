@@ -1,0 +1,139 @@
+{
+  "schema_version": 2,
+  "session_id": "20260611-172955",
+  "baseline_run_id": 6,
+  "baseline_rerun_id": 6,
+  "noise_floor_pct": 1.0,
+  "candidates": [
+    {
+      "id": "dual-stacking-snapshot-balance-fanout",
+      "kind": "contract_family",
+      "selection_lens": "tx_latency",
+      "representative_ids": {
+        "contract_function": {
+          "issuer": "SP1HFCRKEJ8BYW4D0E3FAWHFDX8A25PPAA83HWWZ9",
+          "contract": "dual-stacking-v2_1_0",
+          "function": "capture-snapshot-balances-optimizer"
+        },
+        "stacks_tx_hashes": [
+          "0x9728154c1239b04662827d03388ded4608eb53f42f24f36c7a0c9f05d5478a23",
+          "0xac4eaf264a66347202d171f77b1e88dde72e1aff48000e83b343ef62e15e235a",
+          "0xbd001e976f03206f10e6404abe289f73e8a3c4da8db5ac7d035763c0bee65171",
+          "0x7b5f49a4fdc3164fc923982d7619608831c0847c476d4761708d75fc5df1f3fa",
+          "0x695be269b728d5d55e07191115d513658a05dd97e266e59506cc38e3f733c11a"
+        ]
+      },
+      "rationale": "Fifty-nine stable snapshot optimizer calls average 1.414s with max/median 1.15, repeatedly fanning out through at-block read-only balance lookups and MARF reads.",
+      "suspected_spans": [
+        "walk_backptr",
+        "lookup_variable",
+        "map-get?",
+        "contract-call?"
+      ],
+      "global_materiality": {
+        "pct_blocks": 100.0,
+        "self_wall_ms": 988717.054,
+        "notes": "Shared VM/storage spans; dual-stacking drilldown shows 37.984s walk_backptr and 4.458s SQLite get attributed to this contract.function."
+      },
+      "bucket": "block_processing"
+    },
+    {
+      "id": "dlmm-add-liquidity-multi-throughput",
+      "kind": "contract_family",
+      "selection_lens": "tenure_throughput",
+      "representative_ids": {
+        "contract_function": {
+          "issuer": "SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD",
+          "contract": "dlmm-liquidity-router-v-1-2",
+          "function": "add-liquidity-multi"
+        },
+        "stacks_tx_hashes": [
+          "0x74a98eeda29cc840fc888fcc3f7657fcef48048d649640297025b49195f600d6",
+          "0x9263904171da1a1a3d3b7e538b12b7c8984d0aa221a6588567f933ffa6a995e7",
+          "0x9f0416becf87bb90dcb0bcb2c6e9641efc97342c159b0d6d6937fe1e93f9f610",
+          "0x37ad67a35e440ee7bb3f35620c3ccb26937103eb446b6a15f9b7814fedef9637",
+          "0x408f81be04c3bbf1cf0593233fa75334536c68251e851153322db976d3085898"
+        ]
+      },
+      "rationale": "DLMM add-liquidity-multi has 592 calls, stable max/median 3.4, and consumes 29.86% runtime plus 35.68-45.44% of read/write axes in the run.",
+      "suspected_spans": [
+        "walk_backptr",
+        "put",
+        "serialize_write",
+        "lookup_variable",
+        "map-set"
+      ],
+      "global_materiality": {
+        "pct_blocks": 100.0,
+        "self_wall_ms": 1282647.692,
+        "notes": "Shared spans across the run; contract drilldown attributes 134.204s walk_backptr, 125.047s put, and 5.929s serialize_write to add-liquidity-multi."
+      },
+      "bucket": "block_processing"
+    },
+    {
+      "id": "marf-trie-seal-hash-recalculation",
+      "kind": "block_family",
+      "selection_lens": "commit_time",
+      "representative_ids": {
+        "stacks_block_hashes": [
+          "0x06f1987a4a34a5f1ab301b9291700ffd6edfd9b555b357c30446c62621a8b547",
+          "0x35c1c0ee7fe2def3b6f3f8cebd733439ae71950d267185888467b629e4fd0bdb",
+          "0x9407bf9e1bbe701776f97ffcdf9f2d36f5f786d03b78c61d0af832a9d556e722",
+          "0x615df05829a3d8184b3001020c2b9a969277d9a40c8556c167d150a2554e942c",
+          "0xa2ebb236804dcf78a43de7db54afea63c0ee145adde25b50c02e1c658fd08b7a"
+        ]
+      },
+      "rationale": "calculate_node_hashes recurs in all 15,000 blocks with 381.328s self wall and top3 share 2.6%, dominated by finalize/advance seal trie hashing.",
+      "suspected_spans": [
+        "calculate_node_hashes",
+        "get_block_hash",
+        "inner_get_trie_ancestor_hashes_bytes"
+      ],
+      "global_materiality": {
+        "pct_blocks": 100.0,
+        "self_wall_ms": 436414.308,
+        "notes": "Commit-bucket materiality from span_recurrence; top-block trace shows Finalize seal -> MarfTransaction::seal -> calculate_node_hashes."
+      },
+      "bucket": "block_commit"
+    }
+  ],
+  "rejected_families": [
+    {
+      "family_id": "dlmm-withdraw-liquidity-multi",
+      "lens": "tx_latency",
+      "reason": "dominated by 1-2 outlier representatives"
+    },
+    {
+      "family_id": "dlmm-swap-router-multi",
+      "lens": "tx_latency",
+      "reason": "dominated by 1-2 outlier representatives"
+    },
+    {
+      "family_id": "clarity-vm-abort-wrapper",
+      "lens": "tx_latency",
+      "reason": "suspected spans exact-match non-targets: with_abort_callback"
+    },
+    {
+      "family_id": "contract-metadata-fetch-cache",
+      "lens": "tx_latency",
+      "reason": "suspected spans exact-match non-targets: fetch_metadata"
+    },
+    {
+      "family_id": "contract-cache-get-contract",
+      "lens": "tx_latency",
+      "reason": "suspected spans exact-match non-targets: get_contract"
+    },
+    {
+      "family_id": "defined-function-canonicalize-types",
+      "lens": "tx_latency",
+      "reason": "suspected spans exact-match non-targets: canonicalize_types"
+    }
+  ],
+  "lens_coverage": {
+    "tx_latency": 1,
+    "tenure_throughput": 1,
+    "commit_time": 1,
+    "weights_applied": "0.4,0.4,0.2",
+    "redistribution_notes": "Balanced one promoted family per lens; DLMM withdraw/swap variants were audited but not promoted because representative distributions were outlier-dominated."
+  }
+}

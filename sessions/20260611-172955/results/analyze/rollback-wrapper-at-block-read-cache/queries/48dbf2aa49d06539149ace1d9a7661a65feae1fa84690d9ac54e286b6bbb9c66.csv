@@ -1,0 +1,2 @@
+context,name,baseline_self_wall_us,candidate_self_wall_us,self_wall_delta_us,self_wall_improvement_pct,baseline_total_wall_us,candidate_total_wall_us,total_wall_delta_us,total_wall_improvement_pct,baseline_calls,candidate_calls,call_delta
+blockstack_lib::chainstate::stacks::index::marf::MARF,get_by_key,422851,271720,-151131,35.741,76355988,47725056,-28630932,37.497,1058080,719820,-338260

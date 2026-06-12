@@ -1,0 +1,223 @@
+{
+  "success": true,
+  "duration_secs": 0.007120958,
+  "data": [
+    {
+      "args": {
+        "block_count": 15000,
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "baseline-20260611-172955",
+        "network": "Mainnet",
+        "no_profiler": false,
+        "no_profiler_kv": false,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 7300000
+        },
+        "storage_deltas": false,
+        "warmup": 0
+      },
+      "duration_secs": 8056.266,
+      "end_time": "2026-06-11T19:52:09",
+      "git_hash": "ab54f9dde79c359b3b2d55e7ec821652cc167681",
+      "id": 6,
+      "name": "baseline-20260611-172955",
+      "start_time": "2026-06-11T17:37:53",
+      "summary": {
+        "avg_block_duration_us": 190995,
+        "blocks": 15000,
+        "total_duration_us": 2864925892
+      }
+    },
+    {
+      "args": {
+        "block": [
+          {
+            "Hash": "c613f8cb0006d1963f1bd891c7992da0d5db44091ab48e225e92ebbae09df024"
+          },
+          {
+            "Hash": "a636ba8ad97f366ff6bdb4a50f25fd3c116e5aafd758336c4f21b4edcb257ef6"
+          },
+          {
+            "Hash": "1d89e0480357303e5f6ac2e90ca9973e2bef038438e7594fabf90873b51df4af"
+          },
+          {
+            "Hash": "41a2093cc795e49934ff25268f62e8c7a7cc13e904a4d45030e3a8ac72bfb729"
+          },
+          {
+            "Hash": "e93cf098a806c42ec1631d138c54e5f234513e9926a48270f04cfb307c507f8f"
+          }
+        ],
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "marf-deferred-node-hash-direct-digest-blocks",
+        "network": "Mainnet",
+        "no_profiler": true,
+        "no_profiler_kv": true,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 1
+        },
+        "storage_deltas": false,
+        "warmup": 10
+      },
+      "duration_secs": 267.751,
+      "end_time": "2026-05-19T10:40:12",
+      "git_hash": "8f8abc50a71f71f11083278b721b53f465a704ef",
+      "id": 5,
+      "name": "marf-deferred-node-hash-direct-digest-blocks",
+      "start_time": "2026-05-19T10:35:44",
+      "summary": {
+        "avg_block_duration_us": 1192187,
+        "blocks": 50,
+        "total_duration_us": 59609388
+      }
+    },
+    {
+      "args": {
+        "block": [
+          {
+            "Hash": "c613f8cb0006d1963f1bd891c7992da0d5db44091ab48e225e92ebbae09df024"
+          },
+          {
+            "Hash": "a636ba8ad97f366ff6bdb4a50f25fd3c116e5aafd758336c4f21b4edcb257ef6"
+          },
+          {
+            "Hash": "1d89e0480357303e5f6ac2e90ca9973e2bef038438e7594fabf90873b51df4af"
+          },
+          {
+            "Hash": "41a2093cc795e49934ff25268f62e8c7a7cc13e904a4d45030e3a8ac72bfb729"
+          },
+          {
+            "Hash": "e93cf098a806c42ec1631d138c54e5f234513e9926a48270f04cfb307c507f8f"
+          }
+        ],
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "marf-deferred-node-hash-direct-digest-blocks",
+        "network": "Mainnet",
+        "no_profiler": true,
+        "no_profiler_kv": true,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 1
+        },
+        "warmup": 10
+      },
+      "duration_secs": 266.665,
+      "end_time": "2026-05-19T08:08:22",
+      "git_hash": "8f8abc50a71f71f11083278b721b53f465a704ef",
+      "id": 4,
+      "name": "marf-deferred-node-hash-direct-digest-blocks",
+      "start_time": "2026-05-19T08:03:56",
+      "summary": {
+        "avg_block_duration_us": 1198625,
+        "blocks": 50,
+        "total_duration_us": 59931255
+      }
+    },
+    {
+      "args": {
+        "block": [
+          {
+            "Hash": "c613f8cb0006d1963f1bd891c7992da0d5db44091ab48e225e92ebbae09df024"
+          },
+          {
+            "Hash": "a636ba8ad97f366ff6bdb4a50f25fd3c116e5aafd758336c4f21b4edcb257ef6"
+          },
+          {
+            "Hash": "1d89e0480357303e5f6ac2e90ca9973e2bef038438e7594fabf90873b51df4af"
+          },
+          {
+            "Hash": "41a2093cc795e49934ff25268f62e8c7a7cc13e904a4d45030e3a8ac72bfb729"
+          },
+          {
+            "Hash": "e93cf098a806c42ec1631d138c54e5f234513e9926a48270f04cfb307c507f8f"
+          }
+        ],
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "marf-deferred-node-hash-direct-digest-blocks",
+        "network": "Mainnet",
+        "no_profiler": true,
+        "no_profiler_kv": true,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 1
+        },
+        "warmup": 10
+      },
+      "duration_secs": null,
+      "end_time": null,
+      "git_hash": "8f8abc50a71f71f11083278b721b53f465a704ef",
+      "id": 3,
+      "name": "marf-deferred-node-hash-direct-digest-blocks",
+      "start_time": "2026-05-19T04:44:49"
+    },
+    {
+      "args": {
+        "block_count": 10000,
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "baseline-20260514-160342",
+        "network": "Mainnet",
+        "no_profiler_kv": false,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 5000000
+        },
+        "warmup": 1000
+      },
+      "duration_secs": 1922.705,
+      "end_time": "2026-05-14T15:19:26",
+      "git_hash": "3fb8c2f1c1a8dcf3fd6ef6244becc7e317273490",
+      "id": 2,
+      "name": "baseline-20260514-160342",
+      "start_time": "2026-05-14T14:47:23",
+      "summary": {
+        "avg_block_duration_us": 56780,
+        "blocks": 9000,
+        "total_duration_us": 511024269
+      }
+    },
+    {
+      "args": {
+        "block_count": 10000,
+        "calibration": 20,
+        "include_pre_nakamoto_blocks": false,
+        "name": "baseline-20260514-160342",
+        "network": "Mainnet",
+        "no_profiler_kv": false,
+        "repetitions": 10,
+        "shadow_dir_root": "/Volumes/Extern/.stacks-bench-shadows",
+        "source_dir": "/Volumes/Extern/mainnet.compressed",
+        "start_at": {
+          "Height": 5000000
+        },
+        "warmup": 1000
+      },
+      "duration_secs": 2009.343,
+      "end_time": "2026-05-14T14:46:49",
+      "git_hash": "3fb8c2f1c1a8dcf3fd6ef6244becc7e317273490",
+      "id": 1,
+      "name": "baseline-20260514-160342",
+      "start_time": "2026-05-14T14:13:19",
+      "summary": {
+        "avg_block_duration_us": 63119,
+        "blocks": 9000,
+        "total_duration_us": 568072816
+      }
+    }
+  ]
+}

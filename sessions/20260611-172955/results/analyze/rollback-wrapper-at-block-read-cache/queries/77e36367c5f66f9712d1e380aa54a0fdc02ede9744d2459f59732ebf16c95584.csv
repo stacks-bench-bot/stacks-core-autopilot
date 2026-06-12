@@ -1,0 +1,3 @@
+context,name,baseline_self_wall_us,candidate_self_wall_us,self_wall_delta_us,self_wall_improvement_pct,baseline_total_wall_us,candidate_total_wall_us,total_wall_delta_us,total_wall_improvement_pct,baseline_calls,candidate_calls,call_delta
+clarity::vm::database::key_value_wrapper::RollbackWrapper,get_value,145069,134162,-10907,7.518,25910282,16973169,-8937113,34.493,297760,297760,0
+clarity::vm::database::clarity_db::ClarityDatabase,get_value,65222,61811,-3411,5.23,25975504,17034980,-8940524,34.419,297760,297760,0

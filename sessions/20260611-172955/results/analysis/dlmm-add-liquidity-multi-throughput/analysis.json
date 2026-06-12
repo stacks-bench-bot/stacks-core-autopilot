@@ -1,0 +1,204 @@
+{
+  "schema_version": 4,
+  "family_id": "dlmm-add-liquidity-multi-throughput",
+  "status": "accepted",
+  "selection_lens": "tenure_throughput",
+  "lens_disposition": {
+    "lens": "tenure_throughput",
+    "status": "not_actionable",
+    "reason": "The throughput signal is real: add-liquidity-multi accounts for 29.86% of run runtime, 35.68% read_count, 37.92% read_length, 45.44% write_count, and 44.09% write_length, with write_count the promoted near-binding axis. Code and traces show this comes from the contract's 150-iteration fold over nested dlmm-core add-liquidity calls and their consensus-visible map/var writes. The actionable node-side storage handle below reduces wall time in SQLite side-store writes, but it does not reduce deterministic Clarity write_count/read_length/write_length without a contract change or HIP-class cost/VM behavior change."
+  },
+  "targets": [
+    {
+      "target_span": "put",
+      "bucket": "block_processing",
+      "fix_signature": "clarity-side-store-bulk-put",
+      "hotspot": {
+        "span": "put",
+        "self_wall_us": 297586640,
+        "total_wall_us": 297586640,
+        "calls": 1038880,
+        "location": "clarity/src/vm/database/sqlite.rs:133"
+      },
+      "files": [
+        "clarity/src/vm/database/sqlite.rs",
+        "stackslib/src/clarity_vm/database/marf.rs",
+        "clarity/src/vm/database/key_value_wrapper.rs",
+        "clarity/src/vm/database/clarity_store.rs"
+      ],
+      "evidence": "Representative traces 37ad67a3, 408f81be, 92639041, and 9f0416be all run under Transaction -> try_mine_tx_with_len -> PersistentWritableMarfStore::put_all_data after VM execution. That span loops over 1401-1502 staged edits and spends 515-770 ms almost entirely in SqliteConnection::put. The code path is RollbackWrapper::commit collecting bottom-level edits, calling ClarityBackingStore::put_all_data, then PersistentWritableMarfStore::put_all_data converting each value to a MARFValue and invoking SqliteConnection::put once per item before MARF::insert_batch. SqliteConnection::put is a single REPLACE INTO data_table statement via conn.execute, so this target is storage mechanics, not Clarity cost accounting. The fifth representative, 74a98eed, was inspected and is instead dominated by MARF Trie::walk_backptr inside VM reads; it does not invalidate the put target but should not be used as the primary replay sample for it.",
+      "proposed_change": "Add a bulk side-store write helper beside SqliteConnection::put, for example SqliteConnection::put_many(conn, items), that prepares the REPLACE INTO data_table (key, value) VALUES (?, ?) statement once against the existing rusqlite Transaction and executes it for all converted side-store values. Use that helper in PersistentWritableMarfStore::put_all_data after building the MARF keys/values, and in MemoryBackingStore::put_all_data for parity. Keep MARF::insert_batch unchanged and preserve the exact key/value strings and error mapping.",
+      "expected_improvement": {
+        "tx_latency": 5.0,
+        "tenure_throughput": 0.0,
+        "commit_time": 0.0
+      },
+      "risk": "medium",
+      "verification_plan": "Check Clarity backing-store unit coverage for put/get round trips, rollback commit behavior, and MARF side-store reads by hash. Add focused regression coverage if no test asserts that batched put_all_data writes exactly the same data_table rows as individual puts. Then run the targeted replay below and compare put and put_all_data spans, plus transaction duration.",
+      "consensus_breaking": false,
+      "evidence_queries": [
+        {
+          "purpose": "Rank the storage write span in the full baseline run.",
+          "sql_path": "queries/top_spans_by_self_wall.sql",
+          "params": {
+            "run_id": "6",
+            "limit": "100"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/top-spans-by-self-wall.csv",
+          "key_observation": "SqliteConnection::put is span_id 60 with 297586.64 ms self wall across 1038880 calls; avg self is 286.449 us/call.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Confirm add-liquidity-multi is the promoted throughput family and identify the near-binding axis.",
+          "sql_path": "queries/top_clarity_consumers_by_contract.sql",
+          "params": {
+            "run_id": "6",
+            "limit": "25"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/top-clarity-consumers.csv",
+          "key_observation": "add-liquidity-multi has 592 calls and consumes 45.44% of run write_count, 44.09% write_length, 37.92% read_length, 35.68% read_count, and 29.86% runtime.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "List concrete add-liquidity-multi transactions and their Clarity write volume.",
+          "sql_path": "queries/txs_for_contract.sql",
+          "params": {
+            "run_id": "6",
+            "issuer_address": "SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD",
+            "contract_name": "dlmm-liquidity-router-v-1-2",
+            "function_name": "add-liquidity-multi",
+            "limit": "100"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/txs-add-liquidity-multi.csv",
+          "key_observation": "The top five representatives run for 1937-2243 ms and carry 1399-1650 Clarity write_count each.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 37ad67a3 and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_tx_hash": "37ad67a35e440ee7bb3f35620c3ccb26937103eb446b6a15f9b7814fedef9637",
+            "min_wall_ms": "1",
+            "max_rows": "2000"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-37ad67a3.csv",
+          "key_observation": "put_all_data is 565.408 ms; child SqliteConnection::put is 539.374 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 408f81be and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_tx_hash": "408f81be04c3bbf1cf0593233fa75334536c68251e851153322db976d3085898",
+            "min_wall_ms": "1",
+            "max_rows": "2000"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-408f81be.csv",
+          "key_observation": "put_all_data is 540.743 ms; child SqliteConnection::put is 515.217 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 92639041 and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_tx_hash": "9263904171da1a1a3d3b7e538b12b7c8984d0aa221a6588567f933ffa6a995e7",
+            "min_wall_ms": "1",
+            "max_rows": "2000"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-92639041.csv",
+          "key_observation": "put_all_data is 791.306 ms; child SqliteConnection::put is 769.613 ms self across 1502 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Inspect representative 9f0416be and isolate post-VM side-store writes.",
+          "sql_path": "queries/profiler_trace_tx.sql",
+          "params": {
+            "run_id": "6",
+            "stacks_tx_hash": "9f0416becf87bb90dcb0bcb2c6e9641efc97342c159b0d6d6937fe1e93f9f610",
+            "min_wall_ms": "1",
+            "max_rows": "2000"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/trace-9f0416be.csv",
+          "key_observation": "put_all_data is 541.240 ms; child SqliteConnection::put is 517.346 ms self across 1401 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Characterize per-call shape for the put span.",
+          "sql_path": "queries/span_per_sample_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "60"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/span-put-sample-distribution.csv",
+          "key_observation": "SqliteConnection::put has p95 self 417.44 us and p99 self 569.0 us across 1038880 calls.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        },
+        {
+          "purpose": "Confirm put can dominate individual replay blocks.",
+          "sql_path": "queries/span_per_block_distribution.sql",
+          "params": {
+            "run_id": "6",
+            "span_id": "60"
+          },
+          "output_path": "analysis/dlmm-add-liquidity-multi-throughput/queries/span-put-block-distribution.csv",
+          "key_observation": "SqliteConnection::put has max per-block self wall 978.535 ms and p99 block self wall 491.435 ms.",
+          "supports_invocations": [
+            "write-heavy-txs"
+          ]
+        }
+      ],
+      "verification_replay": {
+        "rationale": "Replay the representatives where post-VM side-store writes dominate, then compare transaction latency and the put/put_all_data spans.",
+        "invocations": [
+          {
+            "id": "write-heavy-txs",
+            "label": "write-heavy txs",
+            "purpose": "Measure whether batching side-store writes reduces the SQLite put-heavy add-liquidity executions.",
+            "samples": {
+              "kind": "txids",
+              "txids": [
+                "0x37ad67a35e440ee7bb3f35620c3ccb26937103eb446b6a15f9b7814fedef9637",
+                "0x408f81be04c3bbf1cf0593233fa75334536c68251e851153322db976d3085898",
+                "0x9263904171da1a1a3d3b7e538b12b7c8984d0aa221a6588567f933ffa6a995e7",
+                "0x9f0416becf87bb90dcb0bcb2c6e9641efc97342c159b0d6d6937fe1e93f9f610"
+              ]
+            },
+            "warmup": 0,
+            "repetitions": 20,
+            "profiler": "rich",
+            "expected_signal": {
+              "axis": "tx_latency",
+              "direction": "improves",
+              "estimate_pct": 5.0,
+              "tolerance_pct": 4.0
+            }
+          }
+        ],
+        "suspected_spans": [
+          "put",
+          "put_all_data"
+        ]
+      }
+    }
+  ],
+  "global_materiality_note": "The lens itself is contract-authored Clarity write/read budget and is not node-actionable for tenure throughput. The SQLite side-store batching target is still broadly relevant to write-heavy Clarity transactions beyond this DLMM family, but it should be prioritized as a block-processing latency optimization, not a throughput-budget fix."
+}

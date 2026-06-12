@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "duration_secs": 8247.006315625,
+  "data": {
+    "blocks": 15000,
+    "duration_secs": 7885.631020666,
+    "interrupted": false,
+    "measured_blocks": 15000,
+    "run_id": 6,
+    "summary": {
+      "clarity_runtime": 108841042206,
+      "commit_duration_us": 1160172804,
+      "execution_duration_us": 1569258187,
+      "read_length": 25695938982,
+      "setup_duration_us": 135502211,
+      "total_duration_us": 2864933203,
+      "transactions": 30901,
+      "write_length": 302282535
+    },
+    "warmup_blocks": 0
+  }
+}

@@ -1,0 +1,7 @@
+metric,baseline_value,candidate_value,delta,improvement_pct
+setup_us_per_block,6974.7,7101.3,126.6,-1.815
+execution_us_per_block,1145736.82,1123419.18,-22317.64,1.948
+commit_us_per_block,108833.94,107741.78,-1092.16,1.004
+commit_overhead_baseline_us_per_block,108833.94,107741.78,-1092.16,1.004
+total_us_per_block,1261546.32,1238263.24,-23283.08,1.846
+blocks,50.0,50.0,0.0,0.0

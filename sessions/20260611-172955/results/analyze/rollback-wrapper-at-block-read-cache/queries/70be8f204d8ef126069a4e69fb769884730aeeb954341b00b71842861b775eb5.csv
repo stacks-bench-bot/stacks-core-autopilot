@@ -1,0 +1,6 @@
+metric,baseline_value,candidate_value,delta,improvement_pct
+run_wall_us,16520,14962,-1558,9.431
+block_total_us,129931195,95053163,-34878032,26.843
+blocks_processed,100,100,0,0.0
+txs_processed,100,100,0,0.0
+profiler_records,1100921,1036893,-64028,5.816

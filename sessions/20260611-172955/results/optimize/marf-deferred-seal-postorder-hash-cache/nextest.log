@@ -1,0 +1,40 @@
+    Finished `test` profile [optimized + debuginfo] target(s) in 0.29s
+────────────
+ Nextest run ID 14243db0-8dc1-4cd8-a7f8-0001aa8f25c4 with nextest profile: default
+    Starting 10499 tests across 22 binaries (417 tests skipped)
+        SLOW [> 60.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_1_noop_immediate_batch_15500
+        SLOW [> 60.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_2_node256_deferred_batch_15500
+        SLOW [> 60.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_3_ever_deferred_compress_batch_15500
+        SLOW [> 60.000s] stackslib chainstate::tests::parse_tests::test_cost_balance_exceeded
+        SLOW [>120.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_1_noop_immediate_batch_15500
+        SLOW [>120.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_2_node256_deferred_batch_15500
+        SLOW [>120.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_3_ever_deferred_compress_batch_15500
+        SLOW [> 60.000s] stackslib chainstate::tests::runtime_analysis_tests::runtime_check_error_cost_balance_exceeded_ccall
+        SLOW [>180.000s] stackslib chainstate::stacks::index::test::cache::test_marf_cache_15500_10::case_1_noop_immediate_batch_15500
+        SLOW [>120.000s] stackslib chainstate::tests::runtime_analysis_tests::runtime_check_error_cost_balance_exceeded_ccall
+        SLOW [> 60.000s] stackslib clarity_vm::tests::costs::proptest_replacements_costs_3
+        SLOW [> 60.000s] stackslib clarity_vm::tests::costs::proptest_replacements_costs_4
+        SLOW [>180.000s] stackslib chainstate::tests::runtime_analysis_tests::runtime_check_error_cost_balance_exceeded_ccall
+        SLOW [> 60.000s] stackslib core::tests::test_find_next_missing_transactions
+        SLOW [> 60.000s] stackslib net::tests::download::nakamoto::test_nakamoto_download_run_2_peers
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_inv_sync_across_epoch_change
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_inv_sync_state_machine
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_invs_alternating
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_invs_different_anchor_blocks
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_invs_full
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_invs_sparse
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_make_tenure_inv_from_old_tips
+        SLOW [> 60.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_make_tenure_inv_in_many_reward_cycles
+        SLOW [> 60.000s] stackslib net::tests::mempool::test_mempool_sync_2_peers_nakamoto_paginated
+        SLOW [> 60.000s] stackslib net::tests::mempool::test_mempool_sync_2_peers_paginated
+        SLOW [>120.000s] stackslib net::tests::download::nakamoto::test_nakamoto_download_run_2_peers
+        SLOW [> 60.000s] stackslib net::tests::neighbors::test_step_walk_10_neighbors_of_neighbor_bootstrapping
+        SLOW [>120.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_inv_sync_across_epoch_change
+        SLOW [>120.000s] stackslib net::tests::inv::nakamoto::test_nakamoto_inv_sync_state_machine
+        SLOW [> 60.000s] stackslib net::tests::neighbors::test_step_walk_10_neighbors_of_neighbor_plain
+        SLOW [> 60.000s] stackslib net::tests::neighbors::test_step_walk_1_neighbor_heartbeat_ping
+        SLOW [> 60.000s] stackslib net::tests::neighbors::test_step_walk_2_neighbors_walk_timeout
+        SLOW [>120.000s] stackslib net::tests::neighbors::test_step_walk_2_neighbors_walk_timeout
+        SLOW [>180.000s] stackslib net::tests::neighbors::test_step_walk_2_neighbors_walk_timeout
+────────────
+     Summary [ 830.871s] 10499 tests run: 10499 passed (23 slow), 417 skipped

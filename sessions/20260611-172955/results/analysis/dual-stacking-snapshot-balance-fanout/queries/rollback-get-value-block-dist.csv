@@ -1,0 +1,2 @@
+blocks,total_calls,total_self_wall_ms,min_block_ms,max_block_ms,avg_block_ms,p50_block_ms,p95_block_ms,p99_block_ms,top1_share_pct,top3_share_pct
+15000,2592785,2979.655,0.0,8.607,0.199,0.006,1.344,4.764,0.3,0.8

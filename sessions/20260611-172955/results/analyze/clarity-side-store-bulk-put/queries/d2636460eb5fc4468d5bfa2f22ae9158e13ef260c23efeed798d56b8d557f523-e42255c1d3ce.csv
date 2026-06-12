@@ -1,0 +1,26 @@
+context,name,self_wall_us,total_wall_us,calls,avg_self_us_per_call
+blockstack_lib::chainstate::stacks::index::trie::Trie,walk_backptr,33915791,33919811,3989023,8.502
+clarity::vm::database::clarity_db::ClarityDatabase,fetch_metadata,32287415,52238485,324560,99.481
+blockstack_lib::chainstate::stacks::index::marf::MarfTransaction,commit_to,5110683,5565548,80,63883.537
+blockstack_lib::chainstate::stacks::index::marf::MARF,walk,5025952,38556867,1651160,3.044
+clarity::dispatch,execute-contract,3120329,239949590,72080,43.29
+clarity::vm::database::sqlite::SqliteConnection,put_many,2940091,2940091,240,12250.379
+clarity::vm::database::sqlite::SqliteConnection,get,2797513,2797513,993640,2.815
+blockstack_lib::chainstate::stacks::index::storage::TrieRAM,calculate_node_hashes,2627217,7968649,128182,20.496
+clarity::vm,lookup_variable,2328568,2328568,2896320,0.804
+clarity::vm::database::sqlite::SqliteConnection,get_metadata,1771104,1771104,324560,5.457
+clarity::builtin,contract-call?,1691425,163736469,72000,23.492
+"clarity_types::types::serialization::<impl clarity_types::types::Value>",serialize_write,1640126,3331504,8315600,0.197
+clarity::vm,lookup_function,1522956,1522956,3422200,0.445
+clarity::builtin,let,1078621,303424030,99080,10.886
+clarity::vm::callables::DefinedFunction,canonicalize_types,982382,982382,6237120,0.158
+blockstack_lib::chainstate::stacks::index::marf::MARF,walk_backptr,891897,34811708,3989023,0.224
+"clarity_types::types::serialization::<impl clarity_types::types::Value>",deserialize_read_count,793388,793388,228240,3.476
+blockstack_lib::chainstate::stacks::index::marf::MARF,get_path,780049,39337670,1651160,0.472
+clarity::vm::database::clarity_db::ClarityDatabase,get_contract,719055,52247499,180240,3.989
+blockstack_lib::chainstate::stacks::index::marf::MARF,get_by_key,585297,39923080,1651160,0.354
+blockstack_lib::chainstate::stacks::index::file::TrieFile,append_trie_blob,561289,561496,160,3508.056
+clarity::builtin,contract-of,479038,7754571,36000,13.307
+clarity::builtin,tuple,472143,3716620,210000,2.248
+blockstack_lib::clarity_vm::database::marf::PersistentWritableMarfStore,get_data,434539,34987583,993560,0.437
+clarity::dispatch,begin-read-only-tx,404341,10315897,132000,3.063

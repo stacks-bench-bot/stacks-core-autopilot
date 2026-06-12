@@ -1,0 +1,2 @@
+context,name,baseline_self_wall_us,candidate_self_wall_us,self_wall_delta_us,self_wall_improvement_pct,baseline_total_wall_us,candidate_total_wall_us,total_wall_delta_us,total_wall_improvement_pct,baseline_calls,candidate_calls,call_delta
+blockstack_lib::clarity_vm::database::marf::PersistentWritableMarfStore,put_all_data,76548,54247,-22301,29.133,5109628,4756109,-353519,6.919,240,240,0

@@ -1,0 +1,6 @@
+phase,avg_ms,warmup_blocks,measured_blocks
+Setup,7.043,1450,250
+Finalize,24.383,1450,250
+"Clarity Commit",2.591,1450,250
+"Advance Tip",20.528,1450,250
+"Index Commit",2.247,1450,250

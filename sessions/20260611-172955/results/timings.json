@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "durations": {
+    "analysis": 846.596706958,
+    "baseline": 8554.011370709,
+    "bench": 4978.904538667,
+    "finalize": 616.262368916,
+    "merge": 83.5631155,
+    "optimize": 5702.861539875,
+    "triage": 458.566090917
+  }
+}

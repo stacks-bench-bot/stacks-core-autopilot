@@ -1,0 +1,6 @@
+phase,avg_ms_per_block,blocks
+Setup,9.033,15000
+Execution,104.617,15000
+Commit,77.344,15000
+"Commit (baseline overhead)",64.081,15000
+Total,190.995,15000

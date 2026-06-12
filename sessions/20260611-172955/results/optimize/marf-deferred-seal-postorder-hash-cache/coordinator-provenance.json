@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "session_id": "20260611-172955",
+  "target_id": "marf-deferred-seal-postorder-hash-cache",
+  "delivery_mode": "normal_pr",
+  "base_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "head_sha": "58df008290aaf1c90b13ad768eb5f067cb944b0a",
+  "commit_message": "perf: optimize marf-deferred-seal-postorder-hash-cache"
+}

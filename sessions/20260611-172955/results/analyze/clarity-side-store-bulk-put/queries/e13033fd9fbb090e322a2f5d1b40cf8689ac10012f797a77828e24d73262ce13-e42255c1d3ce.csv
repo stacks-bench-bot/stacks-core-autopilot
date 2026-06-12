@@ -1,0 +1,3 @@
+side,blocks,avg_total_wall_us,min_total_wall_us,p50_total_wall_us,p95_total_wall_us,p99_total_wall_us,max_total_wall_us,avg_calls
+baseline,80,63870.35,25206,30680,73707,741525,741525,3.0
+candidate,80,59451.363,23641,28184,78090,692583,692583,3.0

@@ -1,0 +1,15 @@
+span_id,context,name,self_wall_ms,total_calls,pct_blocks,pct_txs
+13,blockstack_lib::chainstate::stacks::index::trie::Trie,walk_backptr,932669.177,48440451,100.0,100.0
+84,blockstack_lib::chainstate::stacks::index::storage::TrieRAM,calculate_node_hashes,381328.362,2132356,100.0,0.0
+60,clarity::vm::database::sqlite::SqliteConnection,put,297586.638,1038880,100.0,100.0
+62,blockstack_lib::chainstate::stacks::index::trie_sql,get_block_hash,49185.115,973529,100.0,1.8
+14,clarity::vm::database::sqlite::SqliteConnection,get,42445.874,11256501,100.0,100.0
+110,clarity::vm,lookup_variable,36918.123,47062823,54.1,47.9
+27,"clarity_types::types::serialization::<impl clarity_types::types::Value>",serialize_write,14379.954,72790720,100.0,50.5
+12,blockstack_lib::chainstate::stacks::index::marf::MARF,walk_backptr,11165.467,48440451,100.0,100.0
+114,clarity::builtin,get,6922.53,9616884,39.3,31.6
+7,blockstack_lib::chainstate::stacks::index::marf::MarfConnection,get,2622.167,11454892,100.0,100.0
+197,clarity::builtin,fold,1274.73,46539,16.7,9.6
+132,clarity::builtin,map-set,1093.807,393146,43.1,36.9
+25,clarity::builtin,map-get?,965.865,851815,100.0,35.7
+55,clarity::vm::database::clarity_db::ClarityDatabase,lookup_variable,16.76,15000,100.0,0.0

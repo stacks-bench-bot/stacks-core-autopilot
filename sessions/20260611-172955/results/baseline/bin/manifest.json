@@ -1,0 +1,12 @@
+{
+  "source_sha": "f4cab0a011e273e1f1f9b5249afee2fba6123da5",
+  "dirty": false,
+  "cargo_version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "build_flags": [
+    "--release",
+    "-p",
+    "stacks-bench"
+  ],
+  "archived_at": "2026-06-11T17:35:37Z",
+  "archived_path": "/private/tmp/sbagent-workspaces/sessions/20260611-172955/results/baseline/bin/stacks-bench"
+}
