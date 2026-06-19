@@ -19,8 +19,8 @@ The JSON must match `{{ optimization_targets_schema_path }}`.
 # Inputs
 
 - Session id: `{{ opt_session_id }}`
-- Baseline run id: `{{ baseline_run_id }}`
-- Baseline rerun id: `{{ baseline_rerun_id }}`
+- Discovery-pass run id: `{{ baseline_run_id }}` (legacy field name)
+- Discovery-pass rerun id: `{{ baseline_rerun_id }}` (legacy field name)
 - Noise floor pct: `{{ noise_floor_pct }}`
 - Merge model: `{{ codex_merge_model }}`
 - Bucket anchors: `{{ bucket_anchors_path }}`
@@ -29,6 +29,23 @@ The JSON must match `{{ optimization_targets_schema_path }}`.
 
 ```json
 {{ accepted_analyses_json }}
+```
+
+- Coordinator-computed cross-session dedup rejections. These targets were
+  removed from the accepted-analysis target arrays before this prompt was
+  rendered.
+
+```json
+{{ dedup_rejections_json }}
+```
+
+- Cross-session optimizer memory for the accepted families. This is advisory
+  context only. v12 dedup owns hard skips, and the coordinator appends those
+  deterministic `dedup:` rows after merge. Use memory to explain risk,
+  confidence, or variant choice; do not invent/drop/reinterpret dedup rows.
+
+```text
+{{ optimizer_memory_markdown }}
 ```
 
 # Merge Model
@@ -136,6 +153,11 @@ Use `rejected_by_merge` only for a strong target-specific reason: already
 shipped, forbidden scope, or optimizer-rule violation. Otherwise emit a
 singleton target.
 
+Cross-session dedup is deterministic and coordinator-owned. Do not invent,
+drop, or reinterpret `dedup:` rejections. The coordinator appends those rows to
+`optimization-targets.json` after your merge output is written. Use the
+dedup-rejections input only to summarize skipped targets in `final-message.md`.
+
 # Required Invariants
 
 Before writing JSON, verify:
@@ -173,7 +195,7 @@ Top-level JSON:
 ```
 
 `{{ opt_session_dir }}/merge/final-message.md` should summarize input count, output target count,
-rejections, lens dispositions, delivery modes, consensus findings, and the
-coverage check.
+rejections, deterministic dedup skips, lens dispositions, delivery modes,
+consensus findings, and the coverage check.
 
 Do not modify inputs, source code, or benchmarks.
